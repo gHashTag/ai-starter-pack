@@ -1,0 +1,288 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# 🧪 AGENT_Tester: Правила для написания тестов
+
+## 📝 Роль и ответственность
+
+Агент-тестировщик отвечает за написание тестов перед реализацией кода (TDD). Ключевые задачи:
+
+1. Анализ требований и создание тестовых кейсов
+2. Написание модульных, интеграционных и E2E тестов
+3. Подготовка тестовых фикстур и моков
+4. Проверка покрытия кода тестами
+5. Выявление краевых случаев и написание тестов для них
+
+## 🚀 Основные принципы тестирования
+
+### TDD (Test-Driven Development)
+- Сначала пишем тест, затем код
+- Тест должен сначала падать (red), затем проходить (green)
+- После прохождения теста, рефакторим код
+
+### Структура тестов
+- Используем `describe` для группировки тестов
+- Используем `it` для описания тестового случая
+- Следуем паттерну "Arrange-Act-Assert"
+- Один тест - одно утверждение (по возможности)
+
+### Изоляция тестов
+- Каждый тест должен быть независимым
+- Используем моки для внешних зависимостей
+- Сбрасываем состояние между тестами
+
+### Покрытие кода
+- Стремимся к 100% покрытию бизнес-логики
+- Не забываем про тестирование краевых случаев
+- Проверяем обработку ошибок
+
+## 📋 Чек-лист для каждого теста
+
+1. ✅ Определить, что мы тестируем
+2. ✅ Подготовить тестовые данные и моки
+3. ✅ Написать тестовый сценарий
+4. ✅ Убедиться, что тест падает (red)
+5. ✅ Написать минимальный код для прохождения теста
+6. ✅ Проверить, что тест проходит (green)
+7. ✅ Рефакторить код и тест
+
+## 🧠 Алгоритм работы
+
+```mermaid
+graph TD
+    A[Анализ требований] --> B[Определение тестовых кейсов]
+    B --> C[Написание падающего теста]
+    C --> D[Проверка, что тест падает]
+    D --> E[Передача теста разработчику]
+    E --> F[Проверка, что тест проходит]
+    F --> G[Анализ покрытия]
+    G -->|Недостаточное покрытие| B
+    G -->|Достаточное покрытие| H[Финализация тестов]
+```
+
+## 📚 Примеры тестов
+
+### Модульный тест (Unit Test)
+
+```typescript
+import { describe, it, expect, vi } from "vitest";
+import { getUserByTelegramId } from "../../../src/db/users";
+import { db } from "../../../src/db";
+import { users } from "../../../src/db/schema";
+import { eq } from "drizzle-orm";
+
+// Мокаем drizzle ORM
+vi.mock("../../../src/db", () => ({
+  db: {
+    query: {
+      users: {
+        findFirst: vi.fn(),
+      },
+    },
+  },
+}));
+
+describe("getUserByTelegramId", () => {
+  it("should return user when found", async () => {
+    // Arrange
+    const mockUser = {
+      id: 1,
+      telegram_id: "123456789",
+      username: "testuser",
+      first_name: "Test",
+      last_name: "User",
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+    
+    vi.mocked(db.query.users.findFirst).mockResolvedValue(mockUser);
+    
+    // Act
+    const result = await getUserByTelegramId(123456789);
+    
+    // Assert
+    expect(result).toEqual(mockUser);
+    expect(db.query.users.findFirst).toHaveBeenCalledWith({
+      where: eq(users.telegram_id, "123456789"),
+    });
+  });
+
+  it("should return null when user not found", async () => {
+    // Arrange
+    vi.mocked(db.query.users.findFirst).mockResolvedValue(null);
+    
+    // Act
+    const result = await getUserByTelegramId(999999);
+    
+    // Assert
+    expect(result).toBeNull();
+  });
+
+  it("should handle errors and return null", async () => {
+    // Arrange
+    vi.mocked(db.query.users.findFirst).mockRejectedValue(new Error("DB error"));
+    
+    // Act
+    const result = await getUserByTelegramId(123456789);
+    
+    // Assert
+    expect(result).toBeNull();
+  });
+});
+```
+
+### Интеграционный тест
+
+```typescript
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { Telegraf } from "telegraf";
+import { createExampleWizardScene } from "../../../src/templates/wizard-scene-template";
+import { mockTelegramContext } from "../../helpers/mock-telegram";
+
+describe("ExampleWizardScene Integration", () => {
+  let bot: Telegraf;
+  let scene: any;
+  
+  beforeEach(() => {
+    // Создаем новый экземпляр бота для каждого теста
+    bot = new Telegraf("mock-token");
+    scene = createExampleWizardScene();
+  });
+  
+  afterEach(() => {
+    // Очистка после каждого теста
+    bot.stop();
+  });
+  
+  it("should welcome user and move to next step", async () => {
+    // Arrange
+    const ctx = mockTelegramContext();
+    ctx.reply = vi.fn().mockResolvedValue(null);
+    
+    // Act
+    await scene.steps[0](ctx);
+    
+    // Assert
+    expect(ctx.reply).toHaveBeenCalledWith("Добро пожаловать! Как вас зовут?");
+    expect(ctx.wizard.next).toHaveBeenCalled();
+  });
+  
+  it("should handle name input and move to next step", async () => {
+    // Arrange
+    const ctx = mockTelegramContext({
+      message: { text: "John Doe" },
+    });
+    ctx.reply = vi.fn().mockResolvedValue(null);
+    
+    // Act
+    await scene.steps[1](ctx);
+    
+    // Assert
+    expect(ctx.wizard.state.data.name).toBe("John Doe");
+    expect(ctx.reply).toHaveBeenCalledWith(
+      "Приятно познакомиться, John Doe! Сколько вам лет?"
+    );
+    expect(ctx.wizard.next).toHaveBeenCalled();
+  });
+});
+```
+
+### E2E тест
+
+```typescript
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { Telegraf, Scenes } from "telegraf";
+import { session } from "telegraf";
+import { createExampleWizardScene } from "../../../src/templates/wizard-scene-template";
+import { BaseBotContext } from "../../../src/types";
+import { MockTelegramServer } from "../../helpers/mock-telegram-server";
+
+describe("Bot E2E Test", () => {
+  let bot: Telegraf<BaseBotContext>;
+  let mockServer: MockTelegramServer;
+  
+  beforeAll(async () => {
+    // Настраиваем мок-сервер Telegram
+    mockServer = new MockTelegramServer();
+    await mockServer.start();
+    
+    // Создаем бота с мок-сервером
+    bot = new Telegraf<BaseBotContext>(mockServer.token);
+    
+    // Настраиваем бота
+    const exampleScene = createExampleWizardScene();
+    const stage = new Scenes.Stage<BaseBotContext>([exampleScene]);
+    
+    bot.use(session());
+    bot.use(stage.middleware());
+    
+    bot.command("wizard", (ctx) => ctx.scene.enter("example_wizard"));
+    
+    // Запускаем бота
+    await bot.launch();
+  });
+  
+  afterAll(async () => {
+    // Останавливаем бота и мок-сервер
+    bot.stop();
+    await mockServer.stop();
+  });
+  
+  it("should complete the wizard flow", async () => {
+    // Arrange
+    const userId = 123456789;
+    
+    // Act & Assert
+    
+    // Шаг 1: Отправляем команду /wizard
+    await mockServer.sendUpdate({
+      message: {
+        message_id: 1,
+        from: { id: userId, first_name: "Test", is_bot: false },
+        chat: { id: userId, type: "private" },
+        date: Date.now(),
+        text: "/wizard",
+        entities: [{ type: "bot_command", offset: 0, length: 7 }],
+      },
+    });
+    
+    // Проверяем ответ бота
+    const welcome = await mockServer.waitForMessage();
+    expect(welcome.text).toContain("Добро пожаловать");
+    
+    // Шаг 2: Отправляем имя
+    await mockServer.sendUpdate({
+      message: {
+        message_id: 2,
+        from: { id: userId, first_name: "Test", is_bot: false },
+        chat: { id: userId, type: "private" },
+        date: Date.now(),
+        text: "John Doe",
+      },
+    });
+    
+    // Проверяем ответ бота
+    const nameResponse = await mockServer.waitForMessage();
+    expect(nameResponse.text).toContain("Приятно познакомиться, John Doe");
+  });
+});
+```
+
+## 🔧 Полезные инструменты
+
+- `bun run test` - Запуск всех тестов
+- `bun run test:watch` - Запуск тестов в режиме наблюдения
+- `bun run test:coverage` - Проверка покрытия кода
+- `bun run tdd path/to/test.ts` - TDD-цикл для конкретного теста
+
+## 🎯 Критерии качества тестов
+
+1. **Ясность** - Тесты должны быть понятными и читаемыми
+2. **Специфичность** - Каждый тест проверяет конкретный аспект
+3. **Независимость** - Тесты не должны зависеть друг от друга
+4. **Быстрота** - Тесты должны выполняться быстро
+5. **Стабильность** - Тесты должны быть стабильными
+6. **Полнота** - Тесты должны охватывать все критические пути
+7. **Поддерживаемость** - Тесты должны быть легко поддерживаемыми

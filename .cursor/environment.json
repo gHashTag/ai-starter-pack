@@ -1,0 +1,9 @@
+{
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "terminals": [],
+  "install": "bun install --frozen-lockfile && bun run build:full",
+  "start": "bun run start"
+}

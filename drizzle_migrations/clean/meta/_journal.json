@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1717070000000,
+      "tag": "0000_starter_kit_setup",
+      "breakpoints": true
+    }
+  ]
+}
