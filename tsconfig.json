@@ -35,11 +35,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": false,
     "noImplicitOverride": true,
-    "types": ["@types/bun", "vitest/globals"],
+    "types": ["@types/bun", "vitest/globals", "node"],
     "allowImportingTsExtensions": false,
     "noEmit": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "outDir": "./dist"
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "src/modules/digitalAvatarBody"]
+  "exclude": ["node_modules", "src/modules/digitalAvatarBody", "dist"]
 } 

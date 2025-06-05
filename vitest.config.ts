@@ -1,12 +1,11 @@
 import { defineConfig } from "vitest/config";
-import path from "path";
 
 export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    setupFiles: ["./src/__tests__/setup-env.js"],
-    include: ["./src/__tests__/**/*.test.ts"],
+    setupFiles: ["./src/__tests__/setup.ts"],
+    include: ["src/**/*.test.ts", "src/**/*.spec.ts"],
     exclude: [
       "**/node_modules/**",
       "**/dist/**",
@@ -18,10 +17,18 @@ export default defineConfig({
     mockReset: true,
     reporters: ["default", "html"],
     outputFile: "html/index.html",
+    coverage: {
+      reporter: ["text", "json", "html"],
+      exclude: [
+        "node_modules/",
+        "src/__tests__/",
+        "src/types.ts",
+      ],
+    },
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname),
+      "@": "/src",
     },
   },
 });
