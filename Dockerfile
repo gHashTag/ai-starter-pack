@@ -19,5 +19,5 @@ ENV NODE_ENV=production
 # Открываем порт (Railway автоматически назначит PORT)
 EXPOSE $PORT
 
-# Запускаем приложение
-CMD ["bun", "run", "start"]
+# Запускаем приложение через правильную команду
+CMD ["node", "dist/index.js"]
