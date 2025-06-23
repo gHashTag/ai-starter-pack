@@ -26,7 +26,9 @@ const formatError = (err: unknown): Error =>
 const isEntryPoint =
   (typeof import.meta.main === "boolean" && import.meta.main) ||
   process.argv[1]?.endsWith("index.ts") ||
-  import.meta.url.endsWith("index.ts");
+  process.argv[1]?.endsWith("index.js") ||
+  import.meta.url.endsWith("index.ts") ||
+  import.meta.url.endsWith("index.js");
 
 // Запуск бота если файл выполняется напрямую
 if (isEntryPoint) {
