@@ -1,0 +1,42 @@
+# Development files
+.env
+.env.local
+.env.development
+*.log
+
+# Testing files
+src/__tests__/
+vitest.config.ts
+coverage/
+html/
+
+# Documentation
+docs/
+*.md
+!README.md
+!RAILWAY_DEPLOYMENT.md
+
+# Development tools
+.cursor/
+.plandex-v2/
+scripts/
+temp_db_url.txt
+
+# Cache and temporary files
+node_modules/.cache
+.cache/
+cache/
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Git files
+.git/
+.gitignore 
