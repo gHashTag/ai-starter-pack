@@ -1,8 +1,7 @@
 import * as dotenv from 'dotenv';
 import { Telegraf, session, Scenes, Context } from 'telegraf';
 import { logger, LogLevel, LogType } from './utils/logger';
-import { StorageAdapter } from './adapters/storage-adapter';
-import { MemoryAdapter } from './adapters/memory-adapter';
+import { createFunctionalMemoryAdapter } from './adapters/functional-memory.js';
 import { User } from './schemas';
 import { errorHandler } from './middlewares/error-handler';
 import { config } from './config';
@@ -15,7 +14,7 @@ export interface SessionData
 }
 
 export interface CustomContext extends Context {
-  storage: StorageAdapter;
+  storage: any; // Compatible with both StorageAdapter and FunctionalMemoryAdapter
   session: SessionData;
   scene: Scenes.SceneContextScene<CustomContext, Scenes.WizardSessionData>;
 }
@@ -150,9 +149,9 @@ async function startBot() {
 
   bot = new Telegraf<CustomContext>(BOT_TOKEN);
 
-  const storage = new MemoryAdapter();
+  const storage = createFunctionalMemoryAdapter();
   try {
-    logger.info('Хранилище (MemoryAdapter) готово к использованию.', {
+    logger.info('✅ Functional Memory Storage готово к использованию.', {
       type: LogType.SYSTEM,
     });
   } catch (error) {
@@ -176,8 +175,22 @@ async function startBot() {
 
   bot.use(ensureUserMiddleware);
 
-  // Подключаем команды из commands.ts
-  setupCommands(bot);
+  // 🕉️ Подключаем НОВЫЕ functional commands
+  import('./commands/functional-commands.js')
+    .then(({ setupFunctionalCommands }) => {
+      setupFunctionalCommands(bot);
+      logger.info('✅ Functional commands loaded successfully', {
+        type: LogType.SYSTEM,
+      });
+    })
+    .catch(error => {
+      logger.error('❌ Failed to load functional commands', {
+        error: error instanceof Error ? error : new Error(String(error)),
+        type: LogType.SYSTEM,
+      });
+      // Fallback to old commands
+      setupCommands(bot);
+    });
 
   bot.catch((err: any, ctx: CustomContext) => {
     errorHandler(err, ctx);
