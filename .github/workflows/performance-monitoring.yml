@@ -182,7 +182,7 @@ jobs:
 
       - name: 💬 Comment on Latest Commit (if scheduled)
         if: github.event_name == 'schedule'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
