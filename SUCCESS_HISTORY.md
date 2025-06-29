@@ -1,3 +1,59 @@
+## Успешная сборка Carousel Generator Service с Docker (Декабрь 2024)
+
+**Проблема:** Docker сборка для microservice carousel-generator падала с ошибками разрешения путей для shared модулей. Bun bundler не мог найти `../../../shared/utils/event-bus.js` и `../../../shared/events/index.js` в контексте Docker контейнера.
+
+**Ошибка:**
+
+```
+ERROR [carousel-generator builder 6/6] RUN bun run build
+error: Could not resolve: "../../../shared/utils/event-bus.js"
+error: Could not resolve: "../../../shared/events/index.js"
+```
+
+**Решение:**
+
+1. **Исправили структуру Docker build context:**
+   - Запускаем Docker build из корневой директории проекта: `docker build -f services/carousel-generator/Dockerfile -t carousel-generator .`
+   - Правильно копируем shared директорию в контейнер
+
+2. **Создали правильную структуру директорий в контейнере:**
+
+   ```dockerfile
+   # Create directory structure to resolve relative imports
+   RUN mkdir -p /app/src/../../../ && cp -r shared /app/src/../../../
+   ```
+
+3. **Обновили tsconfig.json для carousel-generator:**
+   - Упростили конфигурацию, убрав сложные path mappings
+   - Наследуем от корневого tsconfig.json
+
+4. **Созданы вспомогательные скрипты:**
+   - `scripts/build-carousel-generator.sh` - для сборки Docker образа
+   - `scripts/dev-carousel-generator.sh` - для разработки
+
+5. **Обновлен docker-compose.yml:**
+   - Добавлен сервис carousel-generator
+   - Настроены health checks и зависимости
+
+**Результаты:**
+
+- ✅ Локальная сборка работает: `bun run build`
+- ✅ Docker сборка работает: `docker build -f services/carousel-generator/Dockerfile -t carousel-generator .`
+- ✅ Типы проходят проверку: `bun run typecheck`
+- ✅ Сервис запускается локально: `bun run dev`
+- ✅ Docker образ собирается без ошибок
+
+**Извлеченные уроки:**
+
+1. В Docker контексте относительные пути работают по-другому - нужно учитывать WORKDIR
+2. Для monorepo важно запускать Docker build из корневой директории
+3. Создание правильной структуры директорий в контейнере решает проблемы с путями
+4. Простые решения (копирование директорий) часто лучше сложных (symlinks, path mappings)
+
+**Документация:** Создана документация в `docs/carousel-generator.md`
+
+_Коммит:_ Будет добавлен после коммита изменений
+
 ## Исправление всех ошибок типов в тестах (Июль 2024)
 
 **Проблема:** В проекте было множество ошибок типов в тестах, что затрудняло разработку и поддержку. Основные проблемы:

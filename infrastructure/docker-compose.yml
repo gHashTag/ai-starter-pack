@@ -1,0 +1,193 @@
+# 🌐 Bible VibeCoder Microservices
+# Event-driven functional communication microservices stack
+
+version: '3.8'
+
+services:
+  # 🎨 Carousel Generation Service
+  carousel-generator:
+    build:
+      context: ..
+      dockerfile: services/carousel-generator/Dockerfile
+    container_name: carousel-generator
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=development
+      - CAROUSEL_SERVICE_PORT=3001
+      - AI_SERVICE_URL=http://ai-content:3002
+    volumes:
+      - ../generated-images:/app/generated-images
+    networks:
+      - bible-microservices
+    depends_on:
+      - redis
+      - postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 🧠 AI Content Service (Placeholder)
+  ai-content:
+    image: nginx:alpine
+    container_name: ai-content-service
+    ports:
+      - '3002:80'
+    volumes:
+      - ./mock-ai-service.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - bible-microservices
+    restart: unless-stopped
+
+  # 📱 Telegram Gateway Service (Placeholder)
+  telegram-gateway:
+    image: nginx:alpine
+    container_name: telegram-gateway
+    ports:
+      - '3000:80'
+    networks:
+      - bible-microservices
+    restart: unless-stopped
+
+  # 💾 Data Persistence Service (Placeholder)
+  data-persistence:
+    image: nginx:alpine
+    container_name: data-persistence
+    ports:
+      - '3003:80'
+    networks:
+      - bible-microservices
+    restart: unless-stopped
+
+  # 📊 Analytics Service (Placeholder)
+  analytics:
+    image: nginx:alpine
+    container_name: analytics-service
+    ports:
+      - '3004:80'
+    networks:
+      - bible-microservices
+    restart: unless-stopped
+
+  # 🔄 Event Orchestrator Service (Placeholder)
+  event-orchestrator:
+    image: nginx:alpine
+    container_name: event-orchestrator
+    ports:
+      - '3005:80'
+    networks:
+      - bible-microservices
+    restart: unless-stopped
+
+  # 📨 Redis (Event Bus & Cache)
+  redis:
+    image: redis:7-alpine
+    container_name: redis-eventbus
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis-data:/data
+    networks:
+      - bible-microservices
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # 🗃️ PostgreSQL (Primary Database)
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-main
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_DB=bible_vibecoder
+      - POSTGRES_USER=developer
+      - POSTGRES_PASSWORD=dev_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - bible-microservices
+    restart: unless-stopped
+
+  # 📊 Prometheus (Metrics Collection)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - bible-microservices
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+  # 📈 Grafana (Monitoring Dashboard)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - '3006:3000'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana-dashboard.json:/var/lib/grafana/dashboards/microservices.json
+    networks:
+      - bible-microservices
+    restart: unless-stopped
+
+  # 🔍 Jaeger (Distributed Tracing)
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - '16686:16686'
+      - '14268:14268'
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - bible-microservices
+    restart: unless-stopped
+
+  # 🌐 API Gateway (nginx)
+  api-gateway:
+    image: nginx:alpine
+    container_name: api-gateway
+    ports:
+      - '8080:80'
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - bible-microservices
+    depends_on:
+      - carousel-generator
+      - ai-content
+      - telegram-gateway
+      - data-persistence
+      - analytics
+      - event-orchestrator
+    restart: unless-stopped
+
+networks:
+  bible-microservices:
+    driver: bridge
+    name: bible-microservices
+
+volumes:
+  redis-data:
+    driver: local
+  postgres-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local

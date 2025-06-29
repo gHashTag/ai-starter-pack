@@ -70,6 +70,19 @@ export const generateCarousel = inngest.createFunction(
     const { topic, telegramUserId, messageId } =
       event.data as GenerateCarouselPayload;
 
+    // 🔑 Проверяем переменные окружения
+    const BOT_TOKEN = process.env.BOT_TOKEN;
+    if (!BOT_TOKEN) {
+      logger.error(
+        '❌ BOT_TOKEN не найден в переменных окружения Inngest функции',
+        {
+          type: LogType.BUSINESS_LOGIC,
+          data: { topic, telegramUserId },
+        }
+      );
+      throw new Error('BOT_TOKEN не настроен для Inngest функции');
+    }
+
     let statusMessageId: number | null = null;
 
     try {

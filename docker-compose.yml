@@ -8,6 +8,24 @@ services:
     env_file:
       - .env
     command: bun run scripts/run-bot.ts
+    depends_on:
+      - carousel-generator
+
+  carousel-generator:
+    build:
+      context: .
+      dockerfile: services/carousel-generator/Dockerfile
+    ports:
+      - '3001:3001'
+    environment:
+      - CAROUSEL_SERVICE_PORT=3001
+      - AI_SERVICE_URL=http://ai-service:3002
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
 
 volumes:
   node_modules:

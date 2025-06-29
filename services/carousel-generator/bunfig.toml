@@ -1,0 +1,17 @@
+[build]
+external = ["express", "uuid"]
+
+[install]
+frozenLockfile = true
+
+[install.cache]
+disable = false
+
+[run]
+silent = false
+hot = true
+
+# Path mapping for build
+[path]
+"@shared/*" = "../../shared/*"
+"@/*" = "src/*"

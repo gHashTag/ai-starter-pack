@@ -279,55 +279,53 @@ echo -e "${GREEN}✅ Все наши порты свободны${NC}"
 
 echo -e "${BLUE}🚀 Запуск сервисов через PM2...${NC}"
 
-# 🎯 СВЯЩЕННЫЕ ПРАВИЛА INNGEST DEV SERVER
-# ОДИН СЕРВЕР = ОДИН ПОРТ = ВСЕ ПРИЛОЖЕНИЯ ПОДКЛЮЧЕНЫ
+# 🎛️ СВЯЩЕННЫЕ ПРАВИЛА INNGEST DEV SERVER - ИСПОЛЬЗОВАНИЕ МЕНЕДЖЕРА
+echo "$(timestamp) 🎛️ Инициализация Inngest Manager..."
 
-if [[ "$INNGEST_RUNNING" == true ]]; then
-    echo "$(timestamp) ✅ Используем существующий Inngest Dev Server на 8288"
-    echo "$(timestamp) 🔄 Запускаем только HTTP Server..."
-    
-    # Экспортируем переменные для подключения к существующему серверу
-    export INNGEST_DEV_SERVER_URL=http://localhost:8288
-    export HTTP_SERVER_PORT=7103
-    
-    # Запускаем только HTTP сервер с правильными переменными
-    HTTP_SERVER_PORT=7103 INNGEST_DEV_SERVER_URL=http://localhost:8288 bun run src/server.ts &
-    HTTP_SERVER_PID=$!
-    echo "$(timestamp) HTTP Server запущен (PID: $HTTP_SERVER_PID)"
-    
-else
-    echo "$(timestamp) 🚀 Запускаем новый Inngest Dev Server на 8288..."
-    
-    # Запускаем Inngest Dev Server согласно священным правилам
-    npx inngest-cli@latest dev --port 8288 &
-    INNGEST_PID=$!
-    echo "$(timestamp) Inngest Dev Server запущен (PID: $INNGEST_PID)"
-    
-    # Ждем пока Inngest запустится
-    echo "$(timestamp) ⏳ Ожидание запуска Inngest Dev Server..."
-    for i in {1..15}; do
-        if curl -s http://localhost:8288 > /dev/null 2>&1; then
-            echo "$(timestamp) ✅ Inngest Dev Server готов!"
-            break
-        fi
-        sleep 1
-        echo -n "."
-    done
-    
-    # Экспортируем переменные
-    export INNGEST_DEV_SERVER_URL=http://localhost:8288
-    export HTTP_SERVER_PORT=7103
-    
-    # Запускаем HTTP сервер с правильными переменными
-    echo "$(timestamp) 🔄 Запускаем HTTP Server..."
-    HTTP_SERVER_PORT=7103 INNGEST_DEV_SERVER_URL=http://localhost:8288 bun run src/server.ts &
-    HTTP_SERVER_PID=$!
-    echo "$(timestamp) HTTP Server запущен (PID: $HTTP_SERVER_PID)"
-fi
+# Запускаем священный Inngest Manager
+source ./scripts/inngest-manager.sh
+
+# Экспортируем переменные для нашего приложения
+export HTTP_SERVER_PORT=7103
+
+# Запускаем HTTP сервер с правильными переменными
+echo "$(timestamp) 🔄 Запускаем HTTP Server..."
+HTTP_SERVER_PORT=7103 INNGEST_DEV_SERVER_URL=$INNGEST_DEV_SERVER_URL bun run src/server.ts &
+HTTP_SERVER_PID=$!
+echo "$(timestamp) HTTP Server запущен (PID: $HTTP_SERVER_PID)"
 
 # Ждем запуска сервисов
 echo "$(timestamp) ⏳ Ожидание готовности сервисов..."
 sleep 5
+
+# 🎯 АВТОМАТИЧЕСКОЕ ПОДКЛЮЧЕНИЕ К INNGEST
+echo "$(timestamp) 🔗 Автоматическое подключение к Inngest Dev Server..."
+
+# Ждем пока HTTP сервер будет готов принимать запросы
+for i in {1..10}; do
+    if curl -s http://localhost:7103/health > /dev/null 2>&1; then
+        echo "$(timestamp) ✅ HTTP Server готов"
+        break
+    fi
+    sleep 1
+    echo -n "."
+done
+
+# Проверяем что наш endpoint синхронизирован с Inngest
+echo "$(timestamp) 🔍 Проверка синхронизации функций..."
+if curl -s http://localhost:7103/api/inngest | grep -q "function_count"; then
+    FUNCTION_COUNT=$(curl -s http://localhost:7103/api/inngest | grep -o '"function_count":[0-9]*' | cut -d':' -f2)
+    echo "$(timestamp) ✅ Bible VibeCoder endpoint работает ($FUNCTION_COUNT функций найдено)"
+else
+    echo "$(timestamp) ❌ Проблема с endpoint!"
+    exit 1
+fi
+
+# 🎯 АВТОМАТИЧЕСКАЯ СИНХРОНИЗАЦИЯ ЧЕРЕЗ СВЯЩЕННЫЙ МЕНЕДЖЕР
+echo "$(timestamp) 🔌 Автоматическая синхронизация Bible VibeCoder с Inngest..."
+
+# Используем функцию из священного менеджера для принудительной синхронизации
+source ./scripts/inngest-manager.sh sync "http://localhost:7103/api/inngest" "bible-vibecoder"
 
 echo "$(timestamp) Проверка состояния сервисов:"
 
