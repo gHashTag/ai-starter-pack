@@ -8,7 +8,10 @@
 import { inngest } from '../client';
 import { bot } from '../../bot';
 import { CarouselContentGeneratorService } from '../../services/carousel-content-generator.service';
-import { InstagramCanvasService } from '../../services/instagram-canvas.service';
+import {
+  InstagramCanvasService,
+  ColorTemplate,
+} from '../../services/instagram-canvas.service';
 import { logger, LogType } from '../../utils/logger';
 import { InputMediaPhoto } from 'telegraf/types';
 import { promises as fs, createReadStream } from 'fs';
@@ -50,6 +53,7 @@ interface GenerateCarouselPayload {
   topic: string;
   telegramUserId: string;
   messageId: number;
+  colorTemplate?: ColorTemplate;
 }
 
 /**
@@ -58,7 +62,7 @@ interface GenerateCarouselPayload {
  * Этапы:
  * 1. 📝 Анализ темы и создание сценария
  * 2. ✍️  Генерация текстов для слайдов
- * 3. 🎨 Создание изображений
+ * 3. 🎨 Создание изображений с выбранным цветовым темплейтом
  * 4. 📱 Отправка пользователю
  *
  * С пошаговой коммуникацией на каждом этапе!
@@ -67,8 +71,16 @@ export const generateCarousel = inngest.createFunction(
   { id: 'generate-carousel-from-topic', name: 'Generate Carousel from Topic' },
   { event: 'app/carousel.generate.request' },
   async ({ event, step }) => {
-    const { topic, telegramUserId, messageId } =
-      event.data as GenerateCarouselPayload;
+    const {
+      topic,
+      telegramUserId,
+      messageId,
+      colorTemplate = ColorTemplate.MORNING,
+    } = event.data as GenerateCarouselPayload;
+
+    // 🎨 Получаем информацию о выбранном темплейте
+    const templates = InstagramCanvasService.getColorTemplates();
+    const selectedTemplate = templates[colorTemplate];
 
     // 🔑 Проверяем переменные окружения
     const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -77,7 +89,7 @@ export const generateCarousel = inngest.createFunction(
         '❌ BOT_TOKEN не найден в переменных окружения Inngest функции',
         {
           type: LogType.BUSINESS_LOGIC,
-          data: { topic, telegramUserId },
+          data: { topic, telegramUserId, colorTemplate },
         }
       );
       throw new Error('BOT_TOKEN не настроен для Inngest функции');
@@ -86,15 +98,16 @@ export const generateCarousel = inngest.createFunction(
     let statusMessageId: number | null = null;
 
     try {
-      // 🎯 ШАГ 1: Уведомляем о начале работы
+      // 🎯 ШАГ 1: Уведомляем о начале работы с указанием выбранного стиля
       const statusMessage = await step.run('notify-start', async () => {
         return bot.telegram.sendMessage(
           telegramUserId,
-          `🎨 **Создаю карусель на тему:** "${topic}"\n\n` +
+          `🎨 **Создаю карусель на тему:** "${topic}"\n` +
+            `🎨 **Стиль:** ${selectedTemplate.emoji} ${selectedTemplate.name}\n\n` +
             `📋 **План работы:**\n` +
             `1️⃣ Анализирую тему и создаю сценарий\n` +
             `2️⃣ Генерирую тексты для слайдов\n` +
-            `3️⃣ Создаю красивые изображения\n` +
+            `3️⃣ Создаю красивые изображения в выбранном стиле\n` +
             `4️⃣ Отправляю готовую карусель\n\n` +
             `⏳ Начинаю работу...`,
           {
@@ -111,11 +124,12 @@ export const generateCarousel = inngest.createFunction(
           telegramUserId,
           statusMessageId!,
           undefined,
-          `🎨 **Создаю карусель на тему:** "${topic}"\n\n` +
+          `🎨 **Создаю карусель на тему:** "${topic}"\n` +
+            `🎨 **Стиль:** ${selectedTemplate.emoji} ${selectedTemplate.name}\n\n` +
             `📋 **План работы:**\n` +
             `✅ Анализирую тему и создаю сценарий\n` +
             `2️⃣ Генерирую тексты для слайдов\n` +
-            `3️⃣ Создаю красивые изображения\n` +
+            `3️⃣ Создаю красивые изображения в выбранном стиле\n` +
             `4️⃣ Отправляю готовую карусель\n\n` +
             `🔍 Анализирую тему и создаю сценарий...`,
           { parse_mode: 'Markdown' }
@@ -137,20 +151,25 @@ export const generateCarousel = inngest.createFunction(
           telegramUserId,
           statusMessageId!,
           undefined,
-          `🎨 **Создаю карусель на тему:** "${topic}"\n\n` +
+          `🎨 **Создаю карусель на тему:** "${topic}"\n` +
+            `🎨 **Стиль:** ${selectedTemplate.emoji} ${selectedTemplate.name}\n\n` +
             `📋 **План работы:**\n` +
             `✅ Анализирую тему и создаю сценарий\n` +
             `✅ Генерирую тексты для слайдов (${slides.length} слайдов)\n` +
-            `3️⃣ Создаю красивые изображения\n` +
+            `3️⃣ Создаю красивые изображения в выбранном стиле\n` +
             `4️⃣ Отправляю готовую карусель\n\n` +
-            `🎨 Создаю красивые изображения...`,
+            `🎨 Создаю красивые изображения в стиле "${selectedTemplate.name}"...`,
           { parse_mode: 'Markdown' }
         );
       });
 
-      // 🎯 ШАГ 5: Генерируем изображения
+      // 🎯 ШАГ 5: Генерируем изображения с выбранным цветовым темплейтом
       const imagePaths = await step.run('generate-slide-images', async () => {
-        return canvasService.generateCarouselImageFiles(slides);
+        return canvasService.generateCarouselImageFiles(
+          slides,
+          undefined,
+          colorTemplate
+        );
       });
 
       // 🎯 ШАГ 6: Уведомляем о готовности к отправке
@@ -159,13 +178,14 @@ export const generateCarousel = inngest.createFunction(
           telegramUserId,
           statusMessageId!,
           undefined,
-          `🎨 **Создаю карусель на тему:** "${topic}"\n\n` +
+          `🎨 **Создаю карусель на тему:** "${topic}"\n` +
+            `🎨 **Стиль:** ${selectedTemplate.emoji} ${selectedTemplate.name}\n\n` +
             `📋 **План работы:**\n` +
             `✅ Анализирую тему и создаю сценарий\n` +
             `✅ Генерирую тексты для слайдов (${slides.length} слайдов)\n` +
             `✅ Создаю красивые изображения (${imagePaths.length} изображений)\n` +
             `4️⃣ Отправляю готовую карусель\n\n` +
-            `📤 Отправляю карусель...`,
+            `📤 Отправляю карусель в стиле "${selectedTemplate.name}"...`,
           { parse_mode: 'Markdown' }
         );
       });

@@ -4,6 +4,10 @@
 import { Context } from 'telegraf';
 import { logger, LogType } from '../utils/logger.js';
 import { inngest } from '../inngest/client.js';
+import {
+  InstagramCanvasService,
+  ColorTemplate,
+} from '../services/instagram-canvas.service';
 
 // 📋 Pure Types
 export type CommandContext = Context & {
@@ -197,7 +201,7 @@ export const handleQuickStart: CommandHandler = async ctx => {
   await ctx.reply(quickStartMessage, { parse_mode: 'Markdown' });
 };
 
-// 🎨 Pure Carousel Handler
+// 🎨 Carousel Handler с выбором цветовых темплейтов
 export const handleCarousel: CommandHandler = async ctx => {
   logger.info('/carousel command received', {
     type: LogType.USER_ACTION,
@@ -227,12 +231,60 @@ export const handleCarousel: CommandHandler = async ctx => {
     return;
   }
 
+  // 🎨 Показываем выбор цветовых темплейтов
+  const templates = InstagramCanvasService.getColorTemplates();
+  const keyboard = Object.entries(templates).map(([key, template]) => [
+    {
+      text: `${template.emoji} ${template.name}`,
+      callback_data: `carousel_color:${key}:${Buffer.from(topic).toString('base64')}:${telegramUserId}:${messageId}`,
+    },
+  ]);
+
+  await ctx.reply(
+    `🎨 **Выберите цветовую тему для карусели:**\n\n` +
+      `📝 **Тема:** "${topic}"\n\n` +
+      `Каждая тема создает уникальную атмосферу для ваших слайдов!`,
+    {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: keyboard,
+      },
+    }
+  );
+};
+
+// 🎨 Обработчик выбора цветового темплейта
+export const handleColorSelection = async (ctx: any) => {
+  const callbackData = ctx.callbackQuery?.data;
+  if (!callbackData || !callbackData.startsWith('carousel_color:')) {
+    return;
+  }
+
+  const [, colorKey, topicBase64, telegramUserId, messageId] =
+    callbackData.split(':');
+  const topic = Buffer.from(topicBase64, 'base64').toString('utf-8');
+  const colorTemplate = colorKey as ColorTemplate;
+
+  const templates = InstagramCanvasService.getColorTemplates();
+  const selectedTemplate = templates[colorTemplate];
+
   try {
-    logger.info('Попытка отправки события в Inngest', {
+    // Обновляем сообщение с выбранным цветом
+    await ctx.editMessageText(
+      `🎨 **Генерирую карусель в стиле "${selectedTemplate.name}"**\n\n` +
+        `📝 **Тема:** "${topic}"\n` +
+        `🎨 **Стиль:** ${selectedTemplate.emoji} ${selectedTemplate.name}\n\n` +
+        `⏳ Пожалуйста, подождите... Создаю для вас красивые слайды!`,
+      { parse_mode: 'Markdown' }
+    );
+
+    // Отправляем событие в Inngest с выбранным цветом
+    logger.info('Попытка отправки события в Inngest с цветовым темплейтом', {
       type: LogType.BUSINESS_LOGIC,
       data: {
         topic,
         telegramUserId,
+        colorTemplate,
         eventName: 'app/carousel.generate.request',
         inngestBaseUrl:
           process.env.NODE_ENV !== 'production'
@@ -247,30 +299,36 @@ export const handleCarousel: CommandHandler = async ctx => {
         topic,
         telegramUserId: String(telegramUserId),
         messageId,
+        colorTemplate, // 🎨 Добавляем выбранный цветовой темплейт
       },
     });
 
     logger.info(
-      '✅ Событие на генерацию карусели УСПЕШНО отправлено в Inngest',
+      '✅ Событие на генерацию карусели с цветовым темплейтом УСПЕШНО отправлено в Inngest',
       {
         type: LogType.USER_ACTION,
-        data: { topic, telegramUserId },
+        data: { topic, telegramUserId, colorTemplate },
       }
     );
-  } catch (error) {
-    logger.error('Ошибка при отправке события в Inngest', {
-      type: LogType.BUSINESS_LOGIC,
-      error: error instanceof Error ? error : new Error(String(error)),
-      data: { topic, telegramUserId },
-    });
 
-    await ctx.reply(
-      '❌ **Ошибка!** Не удалось запустить генерацию карусели. Попробуйте еще раз.',
+    // Подтверждаем callback
+    await ctx.answerCbQuery(`🎨 Выбран стиль: ${selectedTemplate.name}`);
+  } catch (error) {
+    logger.error(
+      'Ошибка при отправке события в Inngest с цветовым темплейтом',
       {
-        parse_mode: 'Markdown',
-        reply_parameters: { message_id: messageId },
+        type: LogType.BUSINESS_LOGIC,
+        error: error instanceof Error ? error : new Error(String(error)),
+        data: { topic, telegramUserId, colorTemplate },
       }
     );
+
+    await ctx.editMessageText(
+      '❌ **Ошибка!** Не удалось запустить генерацию карусели. Попробуйте еще раз.',
+      { parse_mode: 'Markdown' }
+    );
+
+    await ctx.answerCbQuery('❌ Произошла ошибка');
   }
 };
 
@@ -296,6 +354,7 @@ export const COMMAND_HANDLERS = {
   wisdom: handleWisdom,
   quick: handleQuickStart,
   carousel: handleCarousel,
+  colorSelection: handleColorSelection,
   text: handleText,
 } as const;
 
@@ -306,11 +365,15 @@ export const setupFunctionalCommands = (bot: any): void => {
   bot.command('wisdom', COMMAND_HANDLERS.wisdom);
   bot.command('quick', COMMAND_HANDLERS.quick);
   bot.command('carousel', COMMAND_HANDLERS.carousel);
+
+  // 🎨 Регистрируем обработчик callback-запросов для выбора цвета
+  bot.on('callback_query', COMMAND_HANDLERS.colorSelection);
+
   bot.on('text', COMMAND_HANDLERS.text);
 
   const environment = detectEnvironment();
   logger.info(
-    `✅ Functional commands registered: start, help, wisdom, quick, carousel, text | ${environment.platform}`,
+    `✅ Functional commands registered: start, help, wisdom, quick, carousel, colorSelection, text | ${environment.platform}`,
     {
       type: LogType.SYSTEM,
       data: { environment },

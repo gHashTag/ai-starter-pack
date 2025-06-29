@@ -23,9 +23,11 @@ fi
 
 # 📋 Клонирование репозитория (только если не в директории проекта)
 if [[ ! -f "package.json" ]]; then
-    echo "🚀 Cloning repository..."
-    git clone https://github.com/playra/bible_vibecoder.git
-    cd bible_vibecoder
+    PROJECT_NAME=${1:-"my-bible-vibecoder"}
+    echo "🚀 Cloning repository into $PROJECT_NAME..."
+    git clone https://github.com/playra/bible_vibecoder.git "$PROJECT_NAME"
+    cd "$PROJECT_NAME"
+    echo "📂 Switched to project directory: $(pwd)"
 else
     echo "✅ Already in project directory"
 fi
