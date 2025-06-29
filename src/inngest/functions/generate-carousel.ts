@@ -170,7 +170,34 @@ export const generateCarousel = inngest.createFunction(
         );
       });
 
-      // 🎯 ШАГ 7: Создаем медиа-группу и отправляем
+      // 🎯 ШАГ 7: Дополнительная проверка файлов перед отправкой
+      await step.run('verify-files-exist', async () => {
+        const fs = await import('fs/promises');
+        for (const imagePath of imagePaths) {
+          try {
+            await fs.access(imagePath);
+            const stats = await fs.stat(imagePath);
+            if (stats.size === 0) {
+              throw new Error(`Файл ${imagePath} пустой!`);
+            }
+            logger.info(
+              `✅ Файл проверен перед отправкой: ${imagePath} (${stats.size} bytes)`,
+              {
+                type: LogType.BUSINESS_LOGIC,
+              }
+            );
+          } catch (error) {
+            logger.error(`❌ Файл недоступен для отправки: ${imagePath}`, {
+              type: LogType.BUSINESS_LOGIC,
+              error: error instanceof Error ? error : new Error(String(error)),
+            });
+            throw new Error(`Файл изображения недоступен: ${imagePath}`);
+          }
+        }
+        return { verified: imagePaths.length };
+      });
+
+      // 🎯 ШАГ 8: Создаем медиа-группу и отправляем
       const mediaGroup: InputMediaPhoto[] = imagePaths.map(
         (imagePath, index) => ({
           type: 'photo',
@@ -194,7 +221,7 @@ export const generateCarousel = inngest.createFunction(
         });
       });
 
-      // 🎯 ШАГ 8: Финальное уведомление об успехе
+      // 🎯 ШАГ 9: Финальное уведомление об успехе
       await step.run('notify-success', async () => {
         return bot.telegram.editMessageText(
           telegramUserId,
@@ -212,7 +239,7 @@ export const generateCarousel = inngest.createFunction(
         );
       });
 
-      // 🎯 ШАГ 9: Очистка временных файлов
+      // 🎯 ШАГ 10: Очистка временных файлов
       await step.run('cleanup-images', async () => {
         const cleanupPromises = imagePaths.map(p =>
           fs.unlink(p).catch(err =>

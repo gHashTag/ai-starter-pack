@@ -25,8 +25,17 @@ export class InstagramCanvasService {
     slide: CarouselSlide,
     totalSlides: number
   ): string {
-    const backgroundColor = slide.colorScheme?.background || '#FFFFFF';
-    const textColor = slide.colorScheme?.text || '#000000';
+    // 🎨 СТРОГО БЕЛЫЙ ФОН для всех слайдов
+    const getSlideColors = () => {
+      return {
+        background: '#ffffff',
+        text: '#2c3e50',
+      }; // Только белый фон и темно-серый текст
+    };
+
+    const colors = getSlideColors();
+    const backgroundColor = slide.colorScheme?.background || colors.background;
+    const textColor = slide.colorScheme?.text || colors.text;
 
     return `
       <!DOCTYPE html>
@@ -48,12 +57,13 @@ export class InstagramCanvasService {
             background-color: ${backgroundColor};
             color: ${textColor};
             display: flex;
-            flex-direction: column; /* Вертикальное расположение */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             box-sizing: border-box;
           }
+          
           .container {
             width: 100%;
             height: 100%;
@@ -64,24 +74,37 @@ export class InstagramCanvasService {
             justify-content: center;
             align-items: center;
           }
+          
+          .emoji {
+            font-size: 120px;
+            margin-bottom: 30px;
+            line-height: 1;
+          }
+          
           h1 {
             font-family: 'Lora', 'Noto Color Emoji', serif;
             font-size: 84px;
             font-weight: 700;
             margin: 0 0 40px 0;
             line-height: 1.2;
+            color: ${textColor};
           }
+          
           p {
             font-family: 'Golos Text', 'Noto Color Emoji', sans-serif;
             font-size: 48px;
             line-height: 1.5;
             margin: 0;
+            color: ${textColor};
           }
+          
           .subtitle {
             font-size: 36px;
             margin-top: 20px;
+            color: ${textColor};
             opacity: 0.8;
           }
+          
           .footer {
             position: absolute;
             bottom: 50px;
@@ -91,13 +114,14 @@ export class InstagramCanvasService {
             align-items: center;
             font-size: 28px;
             color: ${textColor};
-            opacity: 0.7;
+            opacity: 0.6;
           }
         </style>
       </head>
       <body>
         <div class="container">
-          <h1>${slide.title}</h1>
+          <div class="emoji">${this.extractEmoji(slide.title)}</div>
+          <h1>${this.removeEmoji(slide.title)}</h1>
           <p>${slide.content.replace(/\n/g, '<br>')}</p>
           ${slide.subtitle ? `<p class="subtitle">${slide.subtitle}</p>` : ''}
         </div>
@@ -148,6 +172,27 @@ export class InstagramCanvasService {
   }
 
   /**
+   * Извлекает эмодзи из начала строки
+   */
+  private extractEmoji(text: string): string {
+    // Более точный регекс для всех эмодзи, включая составные
+    const emojiRegex =
+      /^[\u{1F300}-\u{1F9FF}][\u{200D}\u{FE0F}]*[\u{1F300}-\u{1F9FF}]*|^[\u{2600}-\u{27BF}][\u{FE0F}]*|^[\u{1F100}-\u{1F1FF}]/u;
+    const match = text.match(emojiRegex);
+    return match ? match[0] : '✨';
+  }
+
+  /**
+   * Удаляет эмодзи из начала строки
+   */
+  private removeEmoji(text: string): string {
+    // Удаляем ВСЕ эмодзи с начала строки, включая составные типа 🧘‍♂️
+    const emojiRegex =
+      /^[\u{1F300}-\u{1F9FF}][\u{200D}\u{FE0F}]*[\u{1F300}-\u{1F9FF}]*|^[\u{2600}-\u{27BF}][\u{FE0F}]*|^[\u{1F100}-\u{1F1FF}]/u;
+    return text.replace(emojiRegex, '').trim();
+  }
+
+  /**
    * Генерирует изображения и возвращает пути к файлам
    */
   public async generateCarouselImageFiles(
@@ -181,6 +226,27 @@ export class InstagramCanvasService {
           },
         },
       });
+
+      // 🔧 КРИТИЧЕСКИ ВАЖНО: Проверяем что файл действительно создан!
+      try {
+        await fs.access(output);
+        const stats = await fs.stat(output);
+        if (stats.size === 0) {
+          throw new Error(`Файл ${output} создан, но пустой!`);
+        }
+        logger.info(
+          `✅ Файл создан и проверен: ${output} (${stats.size} bytes)`,
+          {
+            type: LogType.BUSINESS_LOGIC,
+          }
+        );
+      } catch (error) {
+        logger.error(`❌ Файл не создан или поврежден: ${output}`, {
+          type: LogType.BUSINESS_LOGIC,
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
+        throw new Error(`Не удалось создать файл изображения: ${output}`);
+      }
 
       imagePaths.push(output);
     }
