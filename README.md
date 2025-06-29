@@ -29,16 +29,27 @@ _Meditative Programming • Clean Architecture • TDD Mastery_
 
 > _"Код - это медитация в действии"_ 🧘‍♂️
 
-**VibeCode Bible** - это не просто Telegram bot starter kit. Это философия осознанной разработки, воплощенная в коде. Проект создан для обучения и вдохновения разработчиков, которые стремятся к совершенству через медитативное программирование.
+**VibeCode Bible** - это полнофункциональная экосистема для создания умных Telegram-ботов с микросервисной архитектурой. Это не просто стартер-кит, а философия осознанной разработки, воплощенная в production-ready решении.
+
+### 🎯 **Мгновенное развертывание (0-60 за 30 секунд)**
+
+```bash
+# 🚀 СВЯЩЕННАЯ КОМАНДА МГНОВЕННОГО РАЗВЕРТЫВАНИЯ
+curl -fsSL https://raw.githubusercontent.com/playra/bible_vibecoder/main/scripts/one-command-setup.sh | bash
+```
 
 ### ✨ Ключевые особенности
 
 - 🧘‍♂️ **Медитативное программирование** - осознанный подход к каждой строке кода
-- 🧪 **TDD as Religion** - полный цикл Test-Driven Development
-- 🏗️ **Clean Architecture** - чистая архитектура и принципы SOLID
-- 🔄 **Wizard Scenes** - многошаговые диалоги с состоянием
-- 📊 **Type Safety** - строгая типизация TypeScript
-- 🚀 **Modern Stack** - Bun, Drizzle ORM, Vitest, Apollo GraphQL
+- 🧪 **TDD as Religion** - полный цикл Test-Driven Development с автоматизированными скриптами
+- 🏗️ **Микросервисная архитектура** - Telegram Bot + HTTP API + Background Jobs
+- 🔄 **Wizard Scenes** - многошаговые диалоги с умным состоянием
+- 🎨 **AI Content Generation** - OpenAI GPT/Whisper интеграция + генератор каруселей
+- ⚡ **Inngest Functions** - фоновые задачи и event-driven архитектура
+- 📊 **Type Safety** - строгая типизация TypeScript + Zod валидация
+- 🚀 **Modern Stack** - Bun, Drizzle ORM, Vitest, PostgreSQL (Neon), Sharp/Canvas
+- 🎨 **Instagram Canvas Service** - автогенерация красивых изображений для соцсетей
+- 🛡️ **Production Ready** - Docker, PM2, Railway deployment из коробки
 
 ## 🚀 Быстрый старт
 
@@ -71,17 +82,100 @@ bun run dev
 | 👥 **Команды**                   | Готовый фреймворк для Telegram ботов      |
 | 📚 **Преподаватели**             | Учебный материал по лучшим практикам      |
 
-## 📁 Архитектура
+## 🎛️ Микросервисная Мандала
 
 ```
-VibeCode Bible
-├── 🧠 Clean Architecture      # Чистые слои: Domain, Use Cases, Infrastructure
-├── 🧪 TDD Framework          # Red → Green → Refactor цикл
-├── 🔄 Wizard Scenes          # Конечные автоматы для диалогов
-├── 📊 Type-Safe Everything   # TypeScript + Zod валидация
-├── 🚀 Modern Tooling         # Bun + Vitest + Prettier + ESLint
-└── 🌍 Production Ready       # Docker + PM2 + Railway deployment
+🕉️ Bible VibeCoder Ecosystem
+├── 🤖 Telegram Bot Service (Port 7100)
+│   ├── 🧠 AI Content Generation (GPT/Whisper)
+│   ├── 🔄 Wizard Scenes (многошаговые диалоги)
+│   ├── 🎯 Button Handlers (интерактивность)
+│   ├── 📤 File Upload (изображения, документы)
+│   └── 👑 Admin Panel (управление ботом)
+├── 🌐 HTTP API Server (Port 7103)
+│   ├── 🏥 Health Checks (/health)
+│   ├── ⚡ Inngest Integration (/api/inngest)
+│   ├── 🔍 GraphQL Endpoint (/graphql)
+│   └── 📊 Metrics & Monitoring
+├── ⚡ Inngest Functions (Port 8288)
+│   ├── 🎨 Carousel Generation (фоновая генерация)
+│   ├── 📅 Scheduled Jobs (периодические задачи)
+│   ├── 📧 Event Processing (обработка событий)
+│   └── 🔄 Workflow Orchestration
+├── 🗄️ Database Layer
+│   ├── 🐘 PostgreSQL (Neon hosted)
+│   ├── 🌧️ Drizzle ORM (type-safe)
+│   ├── 🔄 Auto Migrations
+│   └── 📊 Connection Pooling
+└── 🎨 Content Generation Services
+    ├── 🖼️ Instagram Canvas (красивые изображения)
+    ├── 🎠 Carousel Generator (соцсети)
+    ├── 🎨 Color Templates (8+ тем оформления)
+    └── 📱 Multi-format Export (PNG, JPG)
 ```
+
+## 🚀 Готовые Фичи из Коробки
+
+### 🤖 **Telegram Bot Features**
+
+- ✅ **Wizard Scenes** - многошаговые диалоги с сохранением состояния
+- ✅ **Button Handlers** - интерактивные инлайн-кнопки
+- ✅ **File Upload Handler** - загрузка и обработка файлов
+- ✅ **AI Chat Integration** - умные ответы через OpenAI GPT
+- ✅ **Voice Processing** - распознавание речи через Whisper
+- ✅ **Admin Commands** - система управления ботом
+- ✅ **User Session Management** - персонализация диалогов
+- ✅ **Error Handling** - graceful обработка ошибок
+
+### 🎨 **Content Generation Engine**
+
+- ✅ **Carousel Generator** - автосоздание каруселей для Instagram/Telegram
+- ✅ **Instagram Canvas Service** - красивое оформление с 8+ цветовыми темами
+- ✅ **AI Text Generation** - умные подписи и контент
+- ✅ **Image Processing** - Sharp.js + Canvas API
+- ✅ **Custom Fonts & Styles** - типографика и брендинг
+- ✅ **Multi-format Export** - PNG, JPG, разные размеры
+- ✅ **Batch Processing** - массовая генерация контента
+
+### ⚡ **Background Processing (Inngest)**
+
+- ✅ **Event-driven Architecture** - реакция на события
+- ✅ **Scheduled Jobs** - задачи по расписанию
+- ✅ **Retry Logic** - умные повторы при ошибках
+- ✅ **Function Orchestration** - сложные воркфлоу
+- ✅ **Real-time Dashboard** - мониторинг выполнения
+- ✅ **Error Tracking** - детальное логирование
+
+### 🗄️ **Database & Storage**
+
+- ✅ **Drizzle ORM** - type-safe database operations
+- ✅ **PostgreSQL Support** - production-ready БД
+- ✅ **Auto Migrations** - версионирование схемы
+- ✅ **Connection Pooling** - оптимизация подключений
+- ✅ **Data Validation** - Zod schemas
+- ✅ **Query Builder** - гибкие запросы
+
+### 🧪 **Testing & Quality**
+
+- ✅ **TDD Workflow** - автоматизированный цикл разработки
+- ✅ **Unit Tests** - покрытие бизнес-логики
+- ✅ **Integration Tests** - тестирование API endpoints
+- ✅ **E2E Tests** - полное тестирование флоу
+- ✅ **Type Checking** - строгая типизация TypeScript
+- ✅ **Code Formatting** - Prettier + ESLint
+- ✅ **Pre-commit Hooks** - Husky + lint-staged
+- ✅ **Coverage Reports** - метрики качества
+
+### 🚀 **DevOps & Deployment**
+
+- ✅ **Docker Support** - контейнеризация
+- ✅ **Railway Deployment** - one-click deploy
+- ✅ **PM2 Process Management** - production runtime
+- ✅ **Environment Configuration** - .env управление
+- ✅ **Health Checks** - мониторинг состояния
+- ✅ **Logging** - структурированные логи
+- ✅ **Port Management** - автоматическое управление портами
+- ✅ **Graceful Shutdown** - корректная остановка сервисов
 
 ## 🛠️ Основные команды
 
