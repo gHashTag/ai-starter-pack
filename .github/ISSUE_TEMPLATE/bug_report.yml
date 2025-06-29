@@ -1,0 +1,119 @@
+name: 🐛 Bug Report
+description: Сообщить об ошибке или неожиданном поведении
+title: '[Bug]: '
+labels: ['bug', 'needs-triage']
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        🕉️ **Благодарим за участие в улучшении VibeCode Bible!**
+
+        > *"Буддхир гьяанам асаммохах"* - "Мудрость, знание и ясность"
+
+        Помогите нам понять проблему, чтобы мы могли исправить её осознанно.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 📝 Описание проблемы
+      description: Четкое и понятное описание того, что пошло не так.
+      placeholder: Опишите проблему подробно...
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 🔄 Шаги для воспроизведения
+      description: Пошаговая инструкция для воспроизведения проблемы.
+      placeholder: |
+        1. Перейти к '...'
+        2. Нажать на '...'
+        3. Увидеть ошибку
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: ✅ Ожидаемое поведение
+      description: Что должно было произойти?
+      placeholder: Опишите ожидаемый результат...
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: ❌ Фактическое поведение
+      description: Что произошло вместо этого?
+      placeholder: Опишите фактический результат...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 📦 Версия
+      description: Какую версию VibeCode Bible вы используете?
+      placeholder: v1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: 🌍 Окружение
+      description: В какой среде возникла проблема?
+      options:
+        - Development
+        - Production
+        - Testing
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: system
+    attributes:
+      label: 💻 Системная информация
+      description: |
+        Информация о вашей системе:
+        - OS: [например, macOS 13.0, Ubuntu 22.04]
+        - Node.js версия: [например, 18.17.0]
+        - Bun версия: [например, 1.0.0]
+        - TypeScript версия: [например, 5.3.3]
+      value: |
+        - OS: 
+        - Node.js: 
+        - Bun: 
+        - TypeScript:
+      render: markdown
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📋 Логи ошибок
+      description: Приложите релевантные логи или сообщения об ошибках.
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 📎 Дополнительная информация
+      description: Скриншоты, видео или другая полезная информация.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: ✅ Checklist
+      description: 'Пожалуйста, подтвердите следующее:'
+      options:
+        - label: 'Я искал похожие issues и не нашел дубликатов'
+          required: true
+        - label: 'Я прочитал документацию и руководство по устранению неполадок'
+          required: true
+        - label: 'Я готов предоставить дополнительную информацию при необходимости'
+          required: true

@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Generated files
+*.log
+coverage/
+html/
+test-output/
+carousel-output/
+
+# Lock files
+package-lock.json
+bun.lock
+yarn.lock
+
+# Config files that should maintain their format
+.env
+.env.*
+
+# Markdown files in vibecoding (special formatting)
+vibecoding/
+
+# Generated documentation
+docs/generated/
+
+# Binary files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+
+# Legacy files
+README_DETAILED.md

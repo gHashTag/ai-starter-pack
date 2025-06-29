@@ -4,4 +4,4 @@
  */
 
 // Экспортируем компоненты для тестирования Telegram-ботов
-export * from "./telegram";
+export * from './telegram';

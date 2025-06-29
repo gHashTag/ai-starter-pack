@@ -3,9 +3,7 @@ import NodeCache from 'node-cache';
 import crypto from 'crypto';
 import fs from 'fs/promises';
 import path from 'path';
-import {
-  TTSService,
-} from './tts.service.interface';
+import { TTSService } from './tts.service.interface';
 import {
   TTSOptions,
   TTSResult,
@@ -117,7 +115,9 @@ export class OpenAITTSService implements TTSService {
     try {
       // Добавляем эмоциональные инструкции к тексту
       const emotionInstructions = this.getEmotionInstructions(emotion);
-      const fullText = emotionInstructions ? `${emotionInstructions} ${text}` : text;
+      const fullText = emotionInstructions
+        ? `${emotionInstructions} ${text}`
+        : text;
 
       // Генерируем речь через OpenAI API
       const response = await this.openai.audio.speech.create({
@@ -125,7 +125,13 @@ export class OpenAITTSService implements TTSService {
         voice,
         input: fullText,
         speed,
-        response_format: format as 'mp3' | 'opus' | 'aac' | 'flac' | 'wav' | 'pcm',
+        response_format: format as
+          | 'mp3'
+          | 'opus'
+          | 'aac'
+          | 'flac'
+          | 'wav'
+          | 'pcm',
       });
 
       // Получаем аудио как Buffer
@@ -166,7 +172,9 @@ export class OpenAITTSService implements TTSService {
 
   public async getCachedAudio(key: string): Promise<TTSResult | null> {
     try {
-      const cached = this.cache.get<{ filePath: string; format: AudioFormat }>(key);
+      const cached = this.cache.get<{ filePath: string; format: AudioFormat }>(
+        key
+      );
       if (!cached) return null;
 
       const { filePath, format } = cached;
@@ -193,7 +201,7 @@ export class OpenAITTSService implements TTSService {
       this.cache.flushAll();
       const files = await fs.readdir(this.cacheDir);
       await Promise.all(
-        files.map((file) => fs.unlink(path.join(this.cacheDir, file)))
+        files.map(file => fs.unlink(path.join(this.cacheDir, file)))
       );
     } catch (error) {
       throw new TTSError(
@@ -203,4 +211,4 @@ export class OpenAITTSService implements TTSService {
       );
     }
   }
-} 
+}

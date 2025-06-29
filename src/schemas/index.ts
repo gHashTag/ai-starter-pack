@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Схема для пользователя.
@@ -12,7 +12,7 @@ export const UserSchema = z.object({
   last_name: z.string().optional().nullable(),
   language_code: z.string().optional().nullable(),
   is_bot: z.boolean().optional(),
-  subscription_level: z.string().default("free"),
+  subscription_level: z.string().default('free'),
   subscription_expires_at: z.date().nullable().optional(),
   last_active_at: z
     .date()
@@ -134,7 +134,7 @@ export const NotificationSettingsSchema = z.object({
   user_id: z.string().uuid(), // Связь с User.id
   enabled: z.boolean().default(true),
   daily_summary: z.boolean().default(false),
-  language: z.string().default("ru"), // язык уведомлений
+  language: z.string().default('ru'), // язык уведомлений
   custom_settings: z.record(z.any()).optional(), // Дополнительные настройки
 });
 

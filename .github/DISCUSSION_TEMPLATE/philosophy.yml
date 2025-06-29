@@ -1,0 +1,55 @@
+title: 🧘‍♂️ Philosophical Programming Discussion
+labels: ['philosophy', 'meditation', 'conscious-coding']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🕉️ Welcome to Philosophical Programming Space
+
+        > *"Code is meditation in action"*
+
+        This is a space for deep discussions about conscious programming, meditation in development, and the spiritual aspects of writing code.
+
+  - type: input
+    id: topic
+    attributes:
+      label: 🧠 Philosophy Topic
+      description: What aspect of conscious programming would you like to explore?
+      placeholder: e.g., "The role of mindfulness in debugging", "TDD as spiritual practice"
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 🤔 Your Question or Thought
+      description: Share your philosophical question or insight about programming
+      placeholder: Describe your thoughts on conscious programming...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: experience_level
+    attributes:
+      label: 🎓 Experience Level
+      description: Your experience with meditative programming
+      options:
+        - Beginner - New to conscious programming
+        - Intermediate - Some experience with mindful coding
+        - Advanced - Practiced meditative programmer
+        - Master - Teaching others conscious programming
+
+  - type: checkboxes
+    id: areas
+    attributes:
+      label: 🌟 Related Areas
+      description: Which areas relate to your question?
+      options:
+        - label: TDD & Test-Driven Development
+        - label: Clean Code & Architecture
+        - label: Debugging & Problem Solving
+        - label: Code Review & Collaboration
+        - label: Refactoring & Maintenance
+        - label: Learning & Growth
+        - label: Work-Life Balance
+        - label: Team Dynamics

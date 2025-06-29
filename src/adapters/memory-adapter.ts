@@ -1,4 +1,4 @@
-import { StorageAdapter } from "./storage-adapter";
+import { StorageAdapter } from './storage-adapter';
 import {
   User,
   UserSchema,
@@ -10,11 +10,11 @@ import {
   ActivityLogSchema,
   NotificationSettings,
   NotificationSettingsSchema,
-} from "../schemas";
-import { randomUUID } from "crypto"; // Для генерации UUID
-import { SessionData } from "../bot"; // Импортируем SessionData из bot.ts
+} from '../schemas';
+import { randomUUID } from 'crypto'; // Для генерации UUID
+import { SessionData } from '../bot'; // Импортируем SessionData из bot.ts
 // import { Note } from "../schemas"; // Для примера с заметками
-import { logger, LogType } from "../utils/logger";
+import { logger, LogType } from '../utils/logger';
 
 /**
  * Реализация StorageAdapter, хранящая все данные в памяти
@@ -34,11 +34,11 @@ export class MemoryAdapter implements StorageAdapter {
   // private noteIdCounter = 1; // Для примера с заметками
 
   async initialize(): Promise<void> {
-    logger.info("MemoryAdapter initialized");
+    logger.info('MemoryAdapter initialized');
   }
 
   async close(): Promise<void> {
-    logger.info("MemoryAdapter closed");
+    logger.info('MemoryAdapter closed');
   }
 
   // --- SessionStore<SessionData> implementation ---
@@ -60,12 +60,12 @@ export class MemoryAdapter implements StorageAdapter {
 
   // --- User methods ---
   async getUserByTelegramId(telegramId: number): Promise<User | null> {
-    const user = this.users.find((u) => u.telegram_id === telegramId);
+    const user = this.users.find(u => u.telegram_id === telegramId);
     return user ? { ...user } : null;
   }
 
   async getUserById(userId: string): Promise<User | null> {
-    const user = this.users.find((u) => u.id === userId);
+    const user = this.users.find(u => u.id === userId);
     return user ? { ...user } : null;
   }
 
@@ -78,7 +78,7 @@ export class MemoryAdapter implements StorageAdapter {
       last_name: userData.last_name,
       language_code: userData.language_code,
       is_bot: userData.is_bot,
-      subscription_level: userData.subscription_level || "free",
+      subscription_level: userData.subscription_level || 'free',
       last_active_at: userData.last_active_at || new Date(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -86,7 +86,7 @@ export class MemoryAdapter implements StorageAdapter {
 
     const parsedUser = UserSchema.safeParse(newUser);
     if (!parsedUser.success) {
-      logger.error("MemoryAdapter: createUser validation failed", {
+      logger.error('MemoryAdapter: createUser validation failed', {
         error: parsedUser.error,
         type: LogType.ERROR,
       });
@@ -104,7 +104,7 @@ export class MemoryAdapter implements StorageAdapter {
     telegramId: number,
     userData: Partial<User>
   ): Promise<User | null> {
-    const userIndex = this.users.findIndex((u) => u.telegram_id === telegramId);
+    const userIndex = this.users.findIndex(u => u.telegram_id === telegramId);
     if (userIndex === -1) {
       logger.warn(`[MemoryAdapter] User not found for update: ${telegramId}`);
       return null;
@@ -117,7 +117,7 @@ export class MemoryAdapter implements StorageAdapter {
 
     const parsedUser = UserSchema.safeParse(updatedUser);
     if (!parsedUser.success) {
-      logger.error("MemoryAdapter: updateUser validation failed", {
+      logger.error('MemoryAdapter: updateUser validation failed', {
         error: parsedUser.error,
         type: LogType.ERROR,
       });
@@ -131,7 +131,7 @@ export class MemoryAdapter implements StorageAdapter {
 
   // --- User Settings methods ---
   async getUserSettings(userId: string): Promise<UserSettings | null> {
-    const settings = this.userSettings.find((s) => s.user_id === userId);
+    const settings = this.userSettings.find(s => s.user_id === userId);
     return settings ? { ...settings } : null;
   }
 
@@ -147,7 +147,7 @@ export class MemoryAdapter implements StorageAdapter {
     const newSettings: UserSettings = {
       id: this.userSettings.length + 1,
       user_id: userId,
-      setting_key: settings.setting_key || "default",
+      setting_key: settings.setting_key || 'default',
       setting_value: settings.setting_value || {},
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -155,7 +155,7 @@ export class MemoryAdapter implements StorageAdapter {
 
     const parsedSettings = UserSettingsSchema.safeParse(newSettings);
     if (!parsedSettings.success) {
-      logger.error("MemoryAdapter: createUserSettings validation failed", {
+      logger.error('MemoryAdapter: createUserSettings validation failed', {
         error: parsedSettings.error,
         type: LogType.ERROR,
       });
@@ -171,9 +171,7 @@ export class MemoryAdapter implements StorageAdapter {
     userId: string,
     settings: Partial<UserSettings>
   ): Promise<UserSettings | null> {
-    const settingIndex = this.userSettings.findIndex(
-      (s) => s.user_id === userId
-    );
+    const settingIndex = this.userSettings.findIndex(s => s.user_id === userId);
     if (settingIndex === -1) {
       return this.createUserSettings(userId, settings);
     }
@@ -186,7 +184,7 @@ export class MemoryAdapter implements StorageAdapter {
 
     const parsedSettings = UserSettingsSchema.safeParse(updatedSettings);
     if (!parsedSettings.success) {
-      logger.error("MemoryAdapter: updateUserSettings validation failed", {
+      logger.error('MemoryAdapter: updateUserSettings validation failed', {
         error: parsedSettings.error,
         type: LogType.ERROR,
       });
@@ -204,7 +202,7 @@ export class MemoryAdapter implements StorageAdapter {
     sceneId: string
   ): Promise<SceneState | null> {
     const state = this.sceneStates.find(
-      (s) => s.user_id === userId && s.scene_id === sceneId
+      s => s.user_id === userId && s.scene_id === sceneId
     );
     return state ? { ...state } : null;
   }
@@ -215,7 +213,7 @@ export class MemoryAdapter implements StorageAdapter {
     stateData: any
   ): Promise<SceneState | null> {
     const stateIndex = this.sceneStates.findIndex(
-      (s) => s.user_id === userId && s.scene_id === sceneId
+      s => s.user_id === userId && s.scene_id === sceneId
     );
 
     if (stateIndex === -1) {
@@ -232,7 +230,7 @@ export class MemoryAdapter implements StorageAdapter {
       const parsedState = SceneStateSchema.safeParse(newState);
       if (!parsedState.success) {
         logger.error(
-          "MemoryAdapter: saveSceneState (create) validation failed",
+          'MemoryAdapter: saveSceneState (create) validation failed',
           {
             error: parsedState.error,
             type: LogType.ERROR,
@@ -257,7 +255,7 @@ export class MemoryAdapter implements StorageAdapter {
       const parsedState = SceneStateSchema.safeParse(updatedState);
       if (!parsedState.success) {
         logger.error(
-          "MemoryAdapter: saveSceneState (update) validation failed",
+          'MemoryAdapter: saveSceneState (update) validation failed',
           {
             error: parsedState.error,
             type: LogType.ERROR,
@@ -276,7 +274,7 @@ export class MemoryAdapter implements StorageAdapter {
 
   async deleteSceneState(userId: string, sceneId: string): Promise<boolean> {
     const stateIndex = this.sceneStates.findIndex(
-      (s) => s.user_id === userId && s.scene_id === sceneId
+      s => s.user_id === userId && s.scene_id === sceneId
     );
     if (stateIndex === -1) {
       return false;
@@ -294,7 +292,7 @@ export class MemoryAdapter implements StorageAdapter {
     const newLog: ActivityLog = {
       id: this.activityLogs.length + 1,
       user_id: log.user_id,
-      action_type: log.action_type || "unknown",
+      action_type: log.action_type || 'unknown',
       action_details: log.action_details || {},
       performed_at: log.performed_at || new Date().toISOString(),
       ip_address: log.ip_address,
@@ -303,7 +301,7 @@ export class MemoryAdapter implements StorageAdapter {
 
     const parsedLog = ActivityLogSchema.safeParse(newLog);
     if (!parsedLog.success) {
-      logger.error("MemoryAdapter: logActivity validation failed", {
+      logger.error('MemoryAdapter: logActivity validation failed', {
         error: parsedLog.error,
         type: LogType.ERROR,
       });
@@ -322,7 +320,7 @@ export class MemoryAdapter implements StorageAdapter {
     limit: number = 100
   ): Promise<ActivityLog[]> {
     return this.activityLogs
-      .filter((log) => log.user_id === userId)
+      .filter(log => log.user_id === userId)
       .sort((a, b) => {
         // Sort by performed_at in descending order
         return (
@@ -346,9 +344,7 @@ export class MemoryAdapter implements StorageAdapter {
   async getNotificationSettings(
     userId: string
   ): Promise<NotificationSettings | null> {
-    const settings = this.notificationSettings.find(
-      (s) => s.user_id === userId
-    );
+    const settings = this.notificationSettings.find(s => s.user_id === userId);
     return settings ? { ...settings } : null;
   }
 
@@ -369,7 +365,7 @@ export class MemoryAdapter implements StorageAdapter {
       user_id: userId,
       enabled: true,
       daily_summary: false,
-      language: "ru",
+      language: 'ru',
       custom_settings: settings?.custom_settings || {},
       ...(settings || {}), // применяем переданные настройки поверх дефолтных
     };
@@ -379,7 +375,7 @@ export class MemoryAdapter implements StorageAdapter {
       NotificationSettingsSchema.safeParse(defaultSettings);
     if (!parsedSettings.success) {
       logger.error(
-        "MemoryAdapter: createNotificationSettings validation failed",
+        'MemoryAdapter: createNotificationSettings validation failed',
         {
           error: parsedSettings.error,
           type: LogType.ERROR,
@@ -397,7 +393,7 @@ export class MemoryAdapter implements StorageAdapter {
     settingsUpdate: Partial<NotificationSettings>
   ): Promise<NotificationSettings | null> {
     const settingsIndex = this.notificationSettings.findIndex(
-      (s) => s.user_id === userId
+      s => s.user_id === userId
     );
     if (settingsIndex === -1) {
       // Если настроек нет, создаем их с переданными обновлениями
@@ -413,7 +409,7 @@ export class MemoryAdapter implements StorageAdapter {
       NotificationSettingsSchema.safeParse(updatedSettingsData);
     if (!parsedSettings.success) {
       logger.error(
-        "MemoryAdapter: updateNotificationSettings validation failed",
+        'MemoryAdapter: updateNotificationSettings validation failed',
         {
           error: parsedSettings.error,
           type: LogType.ERROR,

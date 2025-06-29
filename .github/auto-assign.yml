@@ -1,0 +1,43 @@
+# Configuration for auto-assign action
+# Comment to enable reviewers auto-assignment
+addReviewers: true
+
+# A list of reviewers to be added to pull requests
+reviewers:
+  - vibecode-maintainer
+  - vibecode-team
+
+# A number of reviewers added to the pull request
+numberOfReviewers: 1
+
+# Comment to enable assignees auto-assignment
+addAssignees: author
+
+# A list of keywords to be skipped the process if PR's title include it
+skipKeywords:
+  - wip
+  - draft
+  - '[WIP]'
+  - '[DRAFT]'
+
+# A list of assignees to be added to pull requests
+assignees:
+  - vibecode-maintainer
+
+# A number of assignees to add to the pull request
+numberOfAssignees: 1
+
+# Skip assignment for specific file patterns
+skipDraft: true
+
+# Include specific paths for assignment
+includePaths:
+  - 'src/**'
+  - 'docs/**'
+  - 'scripts/**'
+
+# Exclude paths from assignment
+excludePaths:
+  - '**/*.md'
+  - '.github/**'
+  - 'node_modules/**'

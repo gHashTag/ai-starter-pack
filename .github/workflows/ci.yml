@@ -1,0 +1,125 @@
+name: 🕉️ Continuous Integration
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: 🧘‍♂️ Code Quality & Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20]
+        bun-version: [1.0.0, latest]
+
+    steps:
+      - name: 📥 Checkout Sacred Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 🥯 Setup Bun ${{ matrix.bun-version }}
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ matrix.bun-version }}
+
+      - name: 📦 Install Sacred Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🔍 TypeScript Enlightenment Check
+        run: bun run typecheck
+
+      - name: 🎨 Code Formatting Meditation
+        run: bun run format:check
+
+      - name: 🧪 Sacred Tests Execution
+        run: bun run test
+        env:
+          NODE_ENV: test
+
+      - name: 📊 Coverage Sacred Ritual
+        run: bun run test:coverage
+        if: matrix.node-version == 18 && matrix.bun-version == 'latest'
+
+      - name: 📈 Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: matrix.node-version == 18 && matrix.bun-version == 'latest'
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+
+      - name: 🏗️ Build Sacred Artifact
+        run: bun run build
+
+      - name: 🔒 Security Audit
+        run: bun audit
+        continue-on-error: true
+
+  lighthouse:
+    name: 🏮 Lighthouse Performance
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: 🥯 Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: 📦 Install Dependencies
+        run: bun install
+
+      - name: 🏗️ Build Project
+        run: bun run build
+
+      - name: 🏮 Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          configPath: './lighthouserc.json'
+          uploadArtifacts: true
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  dependency-review:
+    name: 🔐 Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔐 Dependency Review
+        uses: actions/dependency-review-action@v3
+
+  auto-assign:
+    name: 🤖 Auto Assign PR
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: 👥 Auto Assign PR
+        uses: kentaro-m/auto-assign-action@v1.2.5
+        with:
+          configuration-path: '.github/auto-assign.yml'

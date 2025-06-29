@@ -8,4 +8,5 @@ process.env.AUDIO_CACHE_DIR = './test-cache/audio';
 
 // Глобальные переменные для тестов
 (global as any).__DATABASE_URL__ = process.env.DATABASE_URL;
-(global as any).__NEON_CONNECTION_STRING__ = 'postgresql://fake:fake@fake.neon.tech/fake'; 
+(global as any).__NEON_CONNECTION_STRING__ =
+  'postgresql://fake:fake@fake.neon.tech/fake';

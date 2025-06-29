@@ -1,9 +1,9 @@
 /**
  * Фабрика для создания тестовых контекстов Telegram бота
  */
-import type { BaseBotContext } from "../../types";
-import { BotSceneStep } from "../../types";
-import { jest } from "bun:test";
+import type { BaseBotContext } from '../../types';
+import { BotSceneStep } from '../../types';
+import { jest } from 'bun:test';
 // import { Scenes } from "telegraf"; // Removed
 // import { User } from "../../schemas"; // Removed
 
@@ -45,9 +45,9 @@ export function createMockContext(
 ): Partial<BaseBotContext> {
   // Значения по умолчанию
   const telegramId = options.telegramId || 123456789;
-  const username = options.username || "test_user";
-  const firstName = options.firstName || "Test";
-  const lastName = options.lastName || "User";
+  const username = options.username || 'test_user';
+  const firstName = options.firstName || 'Test';
+  const lastName = options.lastName || 'User';
 
   // Создаем моки функций хранилища
   const mockInitialize =
@@ -143,7 +143,7 @@ export function createContextWithUser(
       getUserByTelegramId: jest.fn().mockResolvedValue({
         id: userId,
         telegram_id: telegramId,
-        username: options.username || "test_user",
+        username: options.username || 'test_user',
       }),
     },
   });

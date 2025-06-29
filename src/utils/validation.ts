@@ -6,7 +6,7 @@
  */
 export function isValidProjectName(name: string): boolean {
   // Проверка на null, undefined или пустую строку
-  if (name === null || name === undefined || name === "") {
+  if (name === null || name === undefined || name === '') {
     return false;
   }
 
@@ -14,7 +14,7 @@ export function isValidProjectName(name: string): boolean {
   const trimmedName = name.trim();
 
   // Проверка на пустую строку после удаления пробелов
-  if (trimmedName === "") {
+  if (trimmedName === '') {
     return false;
   }
 
@@ -46,14 +46,14 @@ export function isValidInstagramUrl(url: string): boolean {
     const parsedUrl = new URL(url);
 
     // Проверяем, что протокол только http или https
-    if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
       return false;
     }
 
     // Проверяем, что хост только instagram.com или www.instagram.com
     return (
-      parsedUrl.hostname === "www.instagram.com" ||
-      parsedUrl.hostname === "instagram.com"
+      parsedUrl.hostname === 'www.instagram.com' ||
+      parsedUrl.hostname === 'instagram.com'
     );
   } catch (error) {
     return false; // Невалидный URL, если конструктор URL выбросил ошибку
@@ -72,8 +72,8 @@ export function extractUsernameFromUrl(url: string): string | null {
   try {
     const parsedUrl = new URL(url);
     const pathParts = parsedUrl.pathname
-      .split("/")
-      .filter((part) => part.length > 0);
+      .split('/')
+      .filter(part => part.length > 0);
 
     // Проверяем, что путь не пустой
     if (pathParts.length === 0) {
@@ -82,13 +82,13 @@ export function extractUsernameFromUrl(url: string): string | null {
 
     // Список специальных путей, которые не являются именами пользователей
     const specialPaths = [
-      "p",
-      "reel",
-      "reels",
-      "stories",
-      "explore",
-      "accounts",
-      "tags",
+      'p',
+      'reel',
+      'reels',
+      'stories',
+      'explore',
+      'accounts',
+      'tags',
     ];
 
     // Проверяем, что первая часть пути не является специальным путем
@@ -113,11 +113,11 @@ export function isValidHashtag(hashtag: string): boolean {
   if (!hashtag) {
     return false;
   }
-  const cleanHashtag = hashtag.startsWith("#") ? hashtag.substring(1) : hashtag;
+  const cleanHashtag = hashtag.startsWith('#') ? hashtag.substring(1) : hashtag;
   if (
-    cleanHashtag.includes(" ") ||
-    cleanHashtag.includes("\t") ||
-    cleanHashtag.includes("\n")
+    cleanHashtag.includes(' ') ||
+    cleanHashtag.includes('\t') ||
+    cleanHashtag.includes('\n')
   ) {
     return false;
   }

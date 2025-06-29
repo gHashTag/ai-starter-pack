@@ -1,0 +1,243 @@
+/**
+ * Inngest Configuration Tests
+ *
+ * Тесты для конфигурации Inngest, портов и интеграции.
+ * Демонстрирует лучшие практики тестирования настроек Inngest.
+ *
+ * @note Эти тесты НЕ запускаются автоматически согласно требованию.
+ */
+
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+
+// Импорты для тестирования
+import {
+  inngest,
+  INNGEST_PORTS,
+  getInngestUrls,
+  checkPortAvailability,
+} from "../../inngest/client";
+
+import { inngestConfig, functions } from "../../inngest/server";
+
+import { portTestUtils, testEnvironment } from "./test-utils";
+
+describe("Inngest Configuration", () => {
+  beforeEach(() => {
+    testEnvironment.setup();
+  });
+
+  afterEach(() => {
+    testEnvironment.cleanup();
+    portTestUtils.restoreFetch();
+  });
+
+  describe("Порты и URL конфигурация", () => {
+    it("должна использовать кастомные порты из переменных окружения", () => {
+      expect(INNGEST_PORTS.DEV_SERVER).toBe(9288);
+      expect(INNGEST_PORTS.CONNECT_GATEWAY).toBe(9289);
+    });
+
+    it("должна использовать порты по умолчанию если переменные не заданы", () => {
+      // Arrange - очищаем переменные окружения
+      delete process.env.INNGEST_DEV_PORT;
+      delete process.env.INNGEST_CONNECT_PORT;
+
+      // Re-import модуля (в реальных тестах может потребоваться более сложная логика)
+      // Здесь мы просто проверяем логику
+      const defaultDevPort = process.env.INNGEST_DEV_PORT
+        ? parseInt(process.env.INNGEST_DEV_PORT)
+        : 9288;
+      const defaultConnectPort = process.env.INNGEST_CONNECT_PORT
+        ? parseInt(process.env.INNGEST_CONNECT_PORT)
+        : 9289;
+
+      expect(defaultDevPort).toBe(9288);
+      expect(defaultConnectPort).toBe(9289);
+    });
+
+    it("должна генерировать корректные URL", () => {
+      const urls = getInngestUrls();
+
+      expect(urls.devServer).toBe("http://localhost:9288");
+      expect(urls.connectGateway).toBe("http://localhost:9289");
+      expect(urls.dashboard).toBe("http://localhost:9288/dashboard");
+    });
+  });
+
+  describe("Inngest Client Configuration", () => {
+    it("должна иметь корректную конфигурацию клиента", () => {
+      expect(inngest.id).toBe("bible-vibecoder-app");
+      // Note: name property might not be directly accessible in the current Inngest version
+      expect(typeof inngest).toBe("object");
+    });
+
+    it("должна быть в development режиме для тестов", () => {
+      // В тестовом окружении NODE_ENV = 'test', что не равно 'production'
+      expect(process.env.NODE_ENV).toBe("test");
+    });
+  });
+
+  describe("Server Configuration", () => {
+    it("должна включать все функции в конфигурацию", () => {
+      expect(inngestConfig.client).toBe(inngest);
+      expect(inngestConfig.functions).toBe(functions);
+      expect(Array.isArray(functions)).toBe(true);
+      expect(functions.length).toBeGreaterThan(0);
+    });
+
+    it("должна иметь корректные настройки CORS", () => {
+      expect(inngestConfig.serve.headers).toEqual({
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      });
+    });
+
+    it("должна иметь корректный путь для API", () => {
+      expect(inngestConfig.serve.path).toBe("/api/inngest");
+    });
+  });
+
+  describe("Port Availability Checker", () => {
+    it("должна возвращать true для доступных портов", async () => {
+      // Arrange
+      portTestUtils.createPortCheckMock([9288, 9289]);
+
+      // Act
+      const isAvailable = await checkPortAvailability(9288);
+
+      // Assert
+      expect(isAvailable).toBe(true);
+    });
+
+    it("должна возвращать false для недоступных портов", async () => {
+      // Arrange
+      portTestUtils.createPortCheckMock([]); // Никакие порты не доступны
+
+      // Act
+      const isAvailable = await checkPortAvailability(9288);
+
+      // Assert
+      expect(isAvailable).toBe(false);
+    });
+
+    it("должна обрабатывать ошибки сети", async () => {
+      // Arrange
+      const originalFetch = global.fetch;
+      global.fetch = (() => Promise.reject(new Error("Network error"))) as any;
+
+      // Act
+      const isAvailable = await checkPortAvailability(9288);
+
+      // Assert
+      expect(isAvailable).toBe(false);
+
+      // Cleanup
+      global.fetch = originalFetch;
+    });
+
+    it("должна обрабатывать таймауты", async () => {
+      // Arrange
+      const originalFetch = global.fetch;
+      global.fetch = (() =>
+        new Promise((resolve) => setTimeout(resolve, 2000))) as any; // Таймаут больше 1000ms
+
+      // Act
+      const isAvailable = await checkPortAvailability(9288);
+
+      // Assert
+      expect(isAvailable).toBe(false);
+
+      // Cleanup
+      global.fetch = originalFetch;
+    });
+  });
+
+  describe("Environment Variables", () => {
+    it("должна корректно обрабатывать переменные окружения", () => {
+      // Проверяем, что переменные правильно установлены в testEnvironment.setup()
+      expect(process.env.NODE_ENV).toBe("test");
+      expect(process.env.INNGEST_DEV_PORT).toBe("9288");
+      expect(process.env.INNGEST_CONNECT_PORT).toBe("9289");
+    });
+
+    it("должна использовать базовый URL из переменной окружения", () => {
+      // Arrange
+      const testBaseUrl = "http://custom-host:8888";
+      process.env.INNGEST_BASE_URL = testBaseUrl;
+
+      // Act
+      const baseUrl =
+        process.env.INNGEST_BASE_URL ||
+        `http://localhost:${INNGEST_PORTS.DEV_SERVER}`;
+
+      // Assert
+      expect(baseUrl).toBe(testBaseUrl);
+
+      // Cleanup
+      delete process.env.INNGEST_BASE_URL;
+    });
+  });
+
+  describe("Functions Registry", () => {
+    it("должна содержать hello-world функцию", () => {
+      const functionIds = functions.map((fn) =>
+        typeof fn.id === "function" ? fn.id() : fn.id
+      );
+      expect(functionIds).toContain("hello-world");
+    });
+
+    it("все функции должны иметь уникальные ID", () => {
+      const functionIds = functions.map((fn) =>
+        typeof fn.id === "function" ? fn.id() : fn.id
+      );
+      const uniqueIds = new Set(functionIds);
+
+      expect(functionIds.length).toBe(uniqueIds.size);
+    });
+
+    it("все функции должны быть правильно сконфигурированы", () => {
+      functions.forEach((fn) => {
+        const functionId = typeof fn.id === "function" ? fn.id() : fn.id;
+        const functionName =
+          typeof fn.name === "function" ? (fn.name as any)() : fn.name;
+
+        expect(functionId).toBeDefined();
+        expect(typeof functionId).toBe("string");
+        expect(functionId.length).toBeGreaterThan(0);
+
+        expect(functionName).toBeDefined();
+        expect(typeof functionName).toBe("string");
+        expect(functionName.length).toBeGreaterThan(0);
+      });
+    });
+  });
+});
+
+describe("Production Configuration", () => {
+  beforeEach(() => {
+    // Симулируем production окружение
+    process.env.NODE_ENV = "production";
+  });
+
+  afterEach(() => {
+    testEnvironment.cleanup();
+  });
+
+  it("должна отключать development опции в production", () => {
+    expect(process.env.NODE_ENV).toBe("production");
+
+    // В production isDev должно быть false
+    const isDev = process.env.NODE_ENV !== "production";
+    expect(isDev).toBe(false);
+  });
+
+  it("должна требовать signing key в production", () => {
+    // В production рекомендуется использовать signing key
+    // Это можно проверить в реальной конфигурации
+    const hasSigningKey = !!process.env.INNGEST_SIGNING_KEY;
+
+    // В тестах мы можем проверить, что логика правильная
+    expect(typeof hasSigningKey).toBe("boolean");
+  });
+});

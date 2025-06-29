@@ -4,9 +4,9 @@ import {
   SceneState,
   ActivityLog,
   NotificationSettings,
-} from "../schemas";
+} from '../schemas';
 // import { Note } from "../schemas"; // Для примера с заметками
-import { SessionData } from "../bot"; // SessionData из bot.ts (расширяет TelegrafSessionData)
+import { SessionData } from '../bot'; // SessionData из bot.ts (расширяет TelegrafSessionData)
 
 /**
  * Интерфейс адаптера хранилища

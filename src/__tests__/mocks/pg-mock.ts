@@ -1,4 +1,4 @@
-import { mock, jest } from "bun:test";
+import { mock, jest } from 'bun:test';
 
 // Создаем мок для Pool с использованием jest.fn() для лучшей совместимости с тестами
 const mockPool = {
@@ -15,11 +15,11 @@ export function resetMocks() {
 }
 
 // Мокируем модуль pg
-mock.module("pg", () => {
+mock.module('pg', () => {
   return {
-    Pool: function() {
+    Pool: function () {
       return mockPool;
-    }
+    },
   };
 });
 

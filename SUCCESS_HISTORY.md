@@ -83,7 +83,6 @@
 2. Обновили тесты в файле `competitor-scene-ontext.test.ts`, чтобы они проверяли только факт вызова функции `addCompetitorAccount`, а не конкретные передаваемые значения.
 
 3. Разделили тесты для функций валидации на два файла:
-
    - `validation.test.ts` - тесты для `isValidInstagramUrl`, `extractUsernameFromUrl` и `isValidHashtag`
    - `project-name-validation.test.ts` - тесты для `isValidProjectName`
 
@@ -355,9 +354,9 @@
 ```typescript
 registerButtons(competitorScene, [
   {
-    id: "exit_scene",
+    id: 'exit_scene',
     handler: handleExitCompetitorSceneAction,
-    errorMessage: "Произошла ошибка при выходе из сцены. Попробуйте еще раз.",
+    errorMessage: 'Произошла ошибка при выходе из сцены. Попробуйте еще раз.',
     verbose: true,
   },
 ]);
@@ -391,15 +390,14 @@ registerButtons(competitorScene, [
 ```typescript
 registerButtons(scene, [
   {
-    id: "button1",
+    id: 'button1',
     handler: handleButton1,
-    errorMessage:
-      "Произошла ошибка при обработке кнопки 1. Попробуйте еще раз.",
+    errorMessage: 'Произошла ошибка при обработке кнопки 1. Попробуйте еще раз.',
     errorHandling: {
       showRetryButton: true,
-      retryButtonText: "Повторить",
+      retryButtonText: 'Повторить',
       showCancelButton: true,
-      cancelButtonText: "Отмена",
+      cancelButtonText: 'Отмена',
       sendErrorReport: true,
       adminUserId: 123456789,
     },
@@ -434,27 +432,27 @@ registerButtons(scene, [
 
 ```typescript
 const menuOptions: NestedMenuOptions = {
-  title: "Главное меню",
+  title: 'Главное меню',
   items: [
     {
-      text: "Настройки",
-      id: "settings",
+      text: 'Настройки',
+      id: 'settings',
       submenu: [
         {
-          text: "Уведомления",
-          id: "notifications",
+          text: 'Уведомления',
+          id: 'notifications',
           handler: handleNotificationsAction,
         },
         {
-          text: "Профиль",
-          id: "profile",
+          text: 'Профиль',
+          id: 'profile',
           handler: handleProfileAction,
         },
       ],
     },
     {
-      text: "Помощь",
-      id: "help",
+      text: 'Помощь',
+      id: 'help',
       handler: handleHelpAction,
     },
   ],
@@ -489,11 +487,10 @@ await sendMenu(ctx);
   - **[SUCCESS_HISTORY_WIZARD_SCENES.md](docs/SUCCESS_HISTORY_WIZARD_SCENES.md)**: История успеха с примерами решения конкретных проблем
   - **[WIZARD_SCENE_REFACTORING_CHECKLIST.md](docs/WIZARD_SCENE_REFACTORING_CHECKLIST.md)**: Чек-лист для рефакторинга существующих Wizard-сцен
 - **Примеры исправлений:**
-
   - **Исправление кнопки "Вернуться к списку" в визард-сцене конкурентов**:
 
     ```typescript
-    competitorWizardScene.action("back_to_list", async (ctx: any) => {
+    competitorWizardScene.action('back_to_list', async (ctx: any) => {
       console.log(`[DEBUG] Обработчик кнопки 'back_to_list' вызван`);
       await ctx.answerCbQuery();
 
@@ -568,22 +565,17 @@ await sendMenu(ctx);
 
 ```typescript
 // 1. Импорты
-import { Scenes, Markup } from "telegraf";
-import type { ScraperBotContext } from "../types";
-import { logger } from "../logger";
+import { Scenes, Markup } from 'telegraf';
+import type { ScraperBotContext } from '../types';
+import { logger } from '../logger';
 
 // 2. Утилитные функции
 /**
  * Очищает состояние сессии перед выходом из сцены
  */
-function clearSessionState(
-  ctx: ScraperBotContext,
-  reason: string = "general"
-): void {
+function clearSessionState(ctx: ScraperBotContext, reason: string = 'general'): void {
   if (ctx.scene.session) {
-    logger.info(
-      `[SceneName] Clearing session state before leaving (reason: ${reason})`
-    );
+    logger.info(`[SceneName] Clearing session state before leaving (reason: ${reason})`);
     // Очистка всех необходимых полей состояния
     ctx.scene.session.step = undefined;
     // Специфичные для сцены поля
@@ -600,13 +592,11 @@ function clearSessionState(
  */
 async function safeSceneTransition(
   ctx: ScraperBotContext,
-  targetScene: string = "default_scene",
-  reason: string = "general"
+  targetScene: string = 'default_scene',
+  reason: string = 'general'
 ): Promise<void> {
   try {
-    logger.info(
-      `[SceneName] Transitioning to ${targetScene} scene (reason: ${reason})`
-    );
+    logger.info(`[SceneName] Transitioning to ${targetScene} scene (reason: ${reason})`);
     await ctx.scene.enter(targetScene);
   } catch (error) {
     logger.error(`[SceneName] Error entering ${targetScene} scene:`, error);
@@ -618,37 +608,29 @@ async function safeSceneTransition(
 export class MyWizardScene extends Scenes.WizardScene<ScraperBotContext> {
   constructor(storage: StorageAdapter) {
     super(
-      "my_wizard_scene_id", // ID сцены
+      'my_wizard_scene_id', // ID сцены
 
       // Шаг 1: Начальный шаг
-      async (ctx) => {
+      async ctx => {
         logger.info(`[MyWizard] Шаг 1: Описание шага`);
-        logger.debug(
-          `[MyWizard] Содержимое ctx.wizard.state:`,
-          ctx.wizard.state
-        );
+        logger.debug(`[MyWizard] Содержимое ctx.wizard.state:`, ctx.wizard.state);
 
         // Проверка наличия пользователя
         if (!ctx.from) {
-          logger.error("[MyWizard] ctx.from is undefined");
-          await ctx.reply(
-            "Не удалось определить пользователя. Попробуйте перезапустить бота."
-          );
-          clearSessionState(ctx, "missing_user");
+          logger.error('[MyWizard] ctx.from is undefined');
+          await ctx.reply('Не удалось определить пользователя. Попробуйте перезапустить бота.');
+          clearSessionState(ctx, 'missing_user');
           return ctx.scene.leave();
         }
 
         // Получение данных из состояния или параметров
-        const itemId =
-          ctx.wizard.state.itemId || ctx.scene.session.currentItemId;
+        const itemId = ctx.wizard.state.itemId || ctx.scene.session.currentItemId;
 
         if (!itemId) {
           // Обработка отсутствия необходимых данных
-          await ctx.reply(
-            "Не удалось определить элемент. Пожалуйста, выберите из списка."
-          );
-          clearSessionState(ctx, "missing_item_id");
-          await safeSceneTransition(ctx, "fallback_scene", "missing_item_id");
+          await ctx.reply('Не удалось определить элемент. Пожалуйста, выберите из списка.');
+          clearSessionState(ctx, 'missing_item_id');
+          await safeSceneTransition(ctx, 'fallback_scene', 'missing_item_id');
           return;
         }
 
@@ -657,20 +639,20 @@ export class MyWizardScene extends Scenes.WizardScene<ScraperBotContext> {
           // ...
 
           // Отправка сообщения пользователю
-          await ctx.reply("Сообщение для пользователя", {
-            parse_mode: "Markdown",
+          await ctx.reply('Сообщение для пользователя', {
+            parse_mode: 'Markdown',
             ...Markup.inlineKeyboard([
-              [Markup.button.callback("Кнопка 1", "button_1")],
-              [Markup.button.callback("Кнопка 2", "button_2")],
-              [Markup.button.callback("Назад", "back_button")],
+              [Markup.button.callback('Кнопка 1', 'button_1')],
+              [Markup.button.callback('Кнопка 2', 'button_2')],
+              [Markup.button.callback('Назад', 'back_button')],
             ]),
           });
         } catch (error) {
           // Обработка ошибок
-          logger.error("[MyWizard] Error in step 1:", error);
-          await ctx.reply("Произошла ошибка. Пожалуйста, попробуйте позже.");
-          clearSessionState(ctx, "error_in_step_1");
-          await safeSceneTransition(ctx, "fallback_scene", "error_in_step_1");
+          logger.error('[MyWizard] Error in step 1:', error);
+          await ctx.reply('Произошла ошибка. Пожалуйста, попробуйте позже.');
+          clearSessionState(ctx, 'error_in_step_1');
+          await safeSceneTransition(ctx, 'fallback_scene', 'error_in_step_1');
         }
 
         // Остаемся на текущем шаге или переходим к следующему
@@ -678,12 +660,9 @@ export class MyWizardScene extends Scenes.WizardScene<ScraperBotContext> {
       },
 
       // Шаг 2: Следующий шаг
-      async (ctx) => {
+      async ctx => {
         logger.info(`[MyWizard] Шаг 2: Описание шага`);
-        logger.debug(
-          `[MyWizard] Содержимое ctx.wizard.state:`,
-          ctx.wizard.state
-        );
+        logger.debug(`[MyWizard] Содержимое ctx.wizard.state:`, ctx.wizard.state);
 
         // Логика шага 2
         // ...
@@ -701,7 +680,7 @@ export class MyWizardScene extends Scenes.WizardScene<ScraperBotContext> {
    */
   private registerButtonHandlers(): void {
     // Обработчик для кнопки 1
-    this.action("button_1", async (ctx) => {
+    this.action('button_1', async ctx => {
       logger.info(`[MyWizard] Обработчик кнопки 'button_1' вызван`);
       await ctx.answerCbQuery();
 
@@ -713,7 +692,7 @@ export class MyWizardScene extends Scenes.WizardScene<ScraperBotContext> {
     });
 
     // Обработчик для кнопки 2
-    this.action("button_2", async (ctx) => {
+    this.action('button_2', async ctx => {
       logger.info(`[MyWizard] Обработчик кнопки 'button_2' вызван`);
       await ctx.answerCbQuery();
 
@@ -725,33 +704,32 @@ export class MyWizardScene extends Scenes.WizardScene<ScraperBotContext> {
     });
 
     // Обработчик для кнопки "Назад"
-    this.action("back_button", async (ctx) => {
+    this.action('back_button', async ctx => {
       logger.info(`[MyWizard] Обработчик кнопки 'back_button' вызван`);
       await ctx.answerCbQuery();
 
       // Очистка состояния и безопасный переход в другую сцену
-      clearSessionState(ctx, "back_button_clicked");
-      await safeSceneTransition(ctx, "previous_scene", "back_button_clicked");
+      clearSessionState(ctx, 'back_button_clicked');
+      await safeSceneTransition(ctx, 'previous_scene', 'back_button_clicked');
     });
   }
 }
 
 // 5. Функция для настройки обработчиков команд
 export function setupMyWizard(bot: any) {
-  bot.command("my_command", async (ctx: any) => {
-    logger.info("[MyWizard] Command /my_command triggered");
-    await ctx.scene.enter("my_wizard_scene_id");
+  bot.command('my_command', async (ctx: any) => {
+    logger.info('[MyWizard] Command /my_command triggered');
+    await ctx.scene.enter('my_wizard_scene_id');
   });
 
-  bot.hears("Текст кнопки", async (ctx: any) => {
+  bot.hears('Текст кнопки', async (ctx: any) => {
     logger.info("[MyWizard] Button 'Текст кнопки' clicked");
-    await ctx.scene.enter("my_wizard_scene_id");
+    await ctx.scene.enter('my_wizard_scene_id');
   });
 }
 ```
 
 - **Ключевые элементы паттерна:**
-
   1. **Утилитные функции:**
      - `clearSessionState` - очистка состояния сессии
      - `safeSceneTransition` - безопасный переход между сценами
@@ -771,7 +749,6 @@ export function setupMyWizard(bot: any) {
      - Регистрация обработчиков команд и текстовых сообщений
 
 - **Преимущества паттерна:**
-
   - **Единообразие:** Все сцены имеют одинаковую структуру
   - **Изоляция:** Каждая сцена содержит все необходимые компоненты
   - **Надежность:** Обработка ошибок и безопасные переходы
@@ -790,20 +767,16 @@ export function setupMyWizard(bot: any) {
 - **Описание:** Разработана комплексная система тестирования для Instagram Scraper Bot, включающая планы тестирования, чек-листы, скрипты для подготовки тестовой среды и генерации тестовых данных. Эта система позволяет систематически проверять все аспекты бота и выявлять потенциальные проблемы до демонстрации заказчику.
 
 - **Ключевые компоненты:**
-
   1. **Планы тестирования:**
-
      - Подробный план ручного тестирования (`docs/TESTING_PLAN.md`) с 29 тест-кейсами
      - Упрощенный чек-лист для тестирования MVP (`docs/MVP_TESTING_CHECKLIST.md`)
      - Инструкция по тестированию (`docs/TESTING_INSTRUCTIONS.md`)
 
   2. **Скрипты для подготовки тестовой среды:**
-
      - Скрипт инициализации тестовой среды (`scripts/prepare-test-env.ts`)
      - Скрипт генерации данных с граничными случаями (`scripts/generate-edge-cases.ts`)
 
   3. **Тестовые данные:**
-
      - Базовые тестовые данные для проверки основной функциональности
      - Данные с граничными случаями для проверки обработки ошибок
      - Большие объемы данных для тестирования производительности
@@ -814,27 +787,22 @@ export function setupMyWizard(bot: any) {
      - Сценарии для проверки работы с большим объемом данных
 
 - **Области тестирования:**
-
   1. **Функциональное тестирование:**
-
      - Проверка основных функций бота (управление проектами, конкурентами, хештегами и т.д.)
      - Проверка навигации и переходов между сценами
      - Проверка обработки пользовательского ввода
 
   2. **Тестирование обработки ошибок:**
-
      - Проверка реакции на некорректные входные данные
      - Проверка обработки ошибок API
      - Проверка информативности сообщений об ошибках
 
   3. **Тестирование граничных случаев:**
-
      - Проверка работы с длинными названиями и описаниями
      - Проверка работы со специальными символами
      - Проверка работы с пустыми значениями
 
   4. **Тестирование производительности:**
-
      - Проверка времени отклика при большом количестве данных
      - Проверка использования памяти при длительной работе
      - Проверка скорости загрузки списков с большим количеством элементов
@@ -845,7 +813,6 @@ export function setupMyWizard(bot: any) {
      - Проверка корректной очистки состояния
 
 - **Преимущества системы тестирования:**
-
   - **Систематичность:** Структурированный подход к тестированию всех аспектов бота
   - **Повторяемость:** Возможность многократного выполнения одних и тех же тестов
   - **Автоматизация:** Скрипты для подготовки тестовой среды и генерации данных
@@ -853,7 +820,6 @@ export function setupMyWizard(bot: any) {
   - **Выявление проблем:** Раннее обнаружение потенциальных проблем до демонстрации заказчику
 
 - **Рекомендации по использованию:**
-
   1. Перед каждым релизом проводите полное тестирование по подробному плану
   2. При разработке новых функций добавляйте соответствующие тест-кейсы
   3. Регулярно обновляйте тестовые данные и сценарии
@@ -886,7 +852,6 @@ export function setupMyWizard(bot: any) {
 
 - **Описание:** Разработаны и внедрены стандартные функции для очистки состояния и безопасного перехода между сценами. Эти функции обеспечивают единообразие обработки ошибок и предотвращают зависания при переходах между сценами.
 - **Ключевые улучшения:**
-
   - **Функция clearSessionState**:
     ```typescript
     /**
@@ -894,14 +859,9 @@ export function setupMyWizard(bot: any) {
      * @param ctx Контекст Telegraf
      * @param reason Причина очистки состояния (для логирования)
      */
-    function clearSessionState(
-      ctx: ScraperBotContext,
-      reason: string = "general"
-    ): void {
+    function clearSessionState(ctx: ScraperBotContext, reason: string = 'general'): void {
       if (ctx.scene.session) {
-        logger.info(
-          `[ReelsScene] Clearing session state before leaving (reason: ${reason})`
-        );
+        logger.info(`[ReelsScene] Clearing session state before leaving (reason: ${reason})`);
         ctx.scene.session.reelsFilter = undefined;
         ctx.scene.session.reelsPage = 1;
         ctx.scene.session.currentReelId = undefined;
@@ -921,20 +881,15 @@ export function setupMyWizard(bot: any) {
      */
     async function safeSceneTransition(
       ctx: ScraperBotContext,
-      targetScene: string = "instagram_scraper_projects",
-      reason: string = "general",
+      targetScene: string = 'instagram_scraper_projects',
+      reason: string = 'general',
       state: Record<string, any> = {}
     ): Promise<void> {
       try {
-        logger.info(
-          `[ReelsScene] Transitioning to ${targetScene} scene (reason: ${reason})`
-        );
+        logger.info(`[ReelsScene] Transitioning to ${targetScene} scene (reason: ${reason})`);
         await ctx.scene.enter(targetScene, state);
       } catch (error) {
-        logger.error(
-          `[ReelsScene] Error entering ${targetScene} scene:`,
-          error
-        );
+        logger.error(`[ReelsScene] Error entering ${targetScene} scene:`, error);
         await ctx.scene.leave();
       }
     }
@@ -943,18 +898,14 @@ export function setupMyWizard(bot: any) {
 
     ```typescript
     if (!ctx.from) {
-      logger.error("[ReelsScene] ctx.from is undefined");
+      logger.error('[ReelsScene] ctx.from is undefined');
       await ctx.reply(
-        "Не удалось определить пользователя. Попробуйте перезапустить бота командой /start."
+        'Не удалось определить пользователя. Попробуйте перезапустить бота командой /start.'
       );
 
       // Очистка состояния и безопасный переход в другую сцену
-      clearSessionState(ctx, "missing_user");
-      await safeSceneTransition(
-        ctx,
-        "instagram_scraper_projects",
-        "missing_user"
-      );
+      clearSessionState(ctx, 'missing_user');
+      await safeSceneTransition(ctx, 'instagram_scraper_projects', 'missing_user');
       return;
     }
     ```

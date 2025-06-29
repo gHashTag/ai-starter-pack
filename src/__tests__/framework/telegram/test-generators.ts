@@ -3,9 +3,9 @@
  * @description Содержит функции для генерации типовых тестов для Telegram-сцен
  */
 
-import { describe, it, beforeEach, afterEach } from "bun:test";
-import { MockedTelegramContext, MockedStorageAdapter } from "./types";
-import { createMockContext, createMockAdapter, resetAllMocks } from "./mocks";
+import { describe, it, beforeEach, afterEach } from 'bun:test';
+import { MockedTelegramContext, MockedStorageAdapter } from './types';
+import { createMockContext, createMockAdapter, resetAllMocks } from './mocks';
 
 /**
  * Генерирует тесты для обработчика текстовых сообщений
@@ -60,7 +60,7 @@ export function generateTextHandlerTests<T = any>(options: {
     });
 
     // Создаем тесты для каждого тестового случая
-    cases.forEach((testCase) => {
+    cases.forEach(testCase => {
       it(testCase.name, async () => {
         // Устанавливаем текст сообщения
         mockContext.message = {
@@ -141,7 +141,7 @@ export function generateCallbackQueryHandlerTests<T = any>(options: {
     });
 
     // Создаем тесты для каждого тестового случая
-    cases.forEach((testCase) => {
+    cases.forEach(testCase => {
       it(testCase.name, async () => {
         // Устанавливаем данные callback query
         mockContext.callbackQuery = {
@@ -217,7 +217,7 @@ export function generateEnterTests<T = any>(options: {
     });
 
     // Создаем тесты для каждого тестового случая
-    cases.forEach((testCase) => {
+    cases.forEach(testCase => {
       it(testCase.name, async () => {
         // Выполняем настройку контекста, если она указана
         if (testCase.setupContext) {

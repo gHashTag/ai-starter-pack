@@ -43,4 +43,4 @@
   },
   "include": ["**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", "src/modules/digitalAvatarBody", "dist"]
-} 
+}

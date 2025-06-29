@@ -4,17 +4,17 @@
  */
 
 // Экспортируем типы
-export * from "./types";
+export * from './types';
 
 // Экспортируем моки
-export * from "./mocks";
+export * from './mocks';
 
 // Экспортируем утверждения
-export * from "./assertions";
+export * from './assertions';
 
 // Экспортируем тестеры
-export * from "./scene-tester";
-export * from "./sequence-tester";
+export * from './scene-tester';
+export * from './sequence-tester';
 
 // Экспортируем генераторы тестов
-export * from "./test-generators";
+export * from './test-generators';

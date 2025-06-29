@@ -18,27 +18,41 @@
 ### Пример реализации:
 
 ```typescript
-import { describe, it, expect, beforeEach } from "bun:test";
-import { SceneTester } from "../../helpers/telegram";
-import { ProjectScene } from "../../../scenes/project-scene";
+import { describe, it, expect, beforeEach } from 'bun:test';
+import { SceneTester } from '../../helpers/telegram';
+import { ProjectScene } from '../../../scenes/project-scene';
 
-describe("ProjectScene - Enter Handler", () => {
+describe('ProjectScene - Enter Handler', () => {
   let sceneTester: SceneTester<ProjectScene>;
 
   beforeEach(() => {
     sceneTester = new SceneTester({
-      sceneName: "ProjectScene",
-      sceneFilePath: "../../../scenes/project-scene",
-      sceneConstructor: ProjectScene
+      sceneName: 'ProjectScene',
+      sceneFilePath: '../../../scenes/project-scene',
+      sceneConstructor: ProjectScene,
     });
-    
+
     sceneTester.resetMocks();
   });
 
-  it("should handle successful scene entry", async () => {
+  it('should handle successful scene entry', async () => {
     // Настраиваем моки для успешного сценария
-    const mockUser = { id: 1, telegram_id: 123456789, username: "testuser", created_at: new Date().toISOString(), is_active: true };
-    const mockProjects = [{ id: 1, user_id: 1, name: "Test Project", created_at: new Date().toISOString(), is_active: true }];
+    const mockUser = {
+      id: 1,
+      telegram_id: 123456789,
+      username: 'testuser',
+      created_at: new Date().toISOString(),
+      is_active: true,
+    };
+    const mockProjects = [
+      {
+        id: 1,
+        user_id: 1,
+        name: 'Test Project',
+        created_at: new Date().toISOString(),
+        is_active: true,
+      },
+    ];
 
     sceneTester.updateAdapter({
       getUserByTelegramId: jest.fn().mockResolvedValue(mockUser),
@@ -46,7 +60,7 @@ describe("ProjectScene - Enter Handler", () => {
     });
 
     // Вызываем обработчик входа в сцену
-    await sceneTester.callSceneMethod("enterHandler", sceneTester.getContext());
+    await sceneTester.callSceneMethod('enterHandler', sceneTester.getContext());
 
     // Проверяем, что были вызваны нужные методы
     expect(sceneTester.getAdapter().getUserByTelegramId).toHaveBeenCalledWith(123456789);
@@ -55,18 +69,18 @@ describe("ProjectScene - Enter Handler", () => {
     expect(sceneTester.getAdapter().close).toHaveBeenCalled();
   });
 
-  it("should handle error when user is not found", async () => {
+  it('should handle error when user is not found', async () => {
     // Настраиваем моки для сценария с ошибкой
     sceneTester.updateAdapter({
       getUserByTelegramId: jest.fn().mockResolvedValue(null),
     });
 
     // Вызываем обработчик входа в сцену
-    await sceneTester.callSceneMethod("enterHandler", sceneTester.getContext());
+    await sceneTester.callSceneMethod('enterHandler', sceneTester.getContext());
 
     // Проверяем, что были вызваны нужные методы
     expect(sceneTester.getAdapter().getUserByTelegramId).toHaveBeenCalledWith(123456789);
-    expect(sceneTester.getContext().reply).toHaveBeenCalledWith(expect.stringContaining("ошибка"));
+    expect(sceneTester.getContext().reply).toHaveBeenCalledWith(expect.stringContaining('ошибка'));
     expect(sceneTester.getContext().scene.leave).toHaveBeenCalled();
     expect(sceneTester.getAdapter().close).toHaveBeenCalled();
   });
@@ -90,27 +104,39 @@ describe("ProjectScene - Enter Handler", () => {
 ### Пример реализации:
 
 ```typescript
-import { describe, it, expect, beforeEach } from "bun:test";
-import { SceneTester } from "../../helpers/telegram";
-import { ProjectScene } from "../../../scenes/project-scene";
+import { describe, it, expect, beforeEach } from 'bun:test';
+import { SceneTester } from '../../helpers/telegram';
+import { ProjectScene } from '../../../scenes/project-scene';
 
-describe("ProjectScene - Action Handlers", () => {
+describe('ProjectScene - Action Handlers', () => {
   let sceneTester: SceneTester<ProjectScene>;
 
   beforeEach(() => {
     sceneTester = new SceneTester({
-      sceneName: "ProjectScene",
-      sceneFilePath: "../../../scenes/project-scene",
-      sceneConstructor: ProjectScene
+      sceneName: 'ProjectScene',
+      sceneFilePath: '../../../scenes/project-scene',
+      sceneConstructor: ProjectScene,
     });
-    
+
     sceneTester.resetMocks();
   });
 
-  it("should handle project selection", async () => {
+  it('should handle project selection', async () => {
     // Настраиваем моки для успешного сценария
-    const mockUser = { id: 1, telegram_id: 123456789, username: "testuser", created_at: new Date().toISOString(), is_active: true };
-    const mockProject = { id: 1, user_id: 1, name: "Test Project", created_at: new Date().toISOString(), is_active: true };
+    const mockUser = {
+      id: 1,
+      telegram_id: 123456789,
+      username: 'testuser',
+      created_at: new Date().toISOString(),
+      is_active: true,
+    };
+    const mockProject = {
+      id: 1,
+      user_id: 1,
+      name: 'Test Project',
+      created_at: new Date().toISOString(),
+      is_active: true,
+    };
 
     sceneTester.updateAdapter({
       getUserByTelegramId: jest.fn().mockResolvedValue(mockUser),
@@ -119,12 +145,12 @@ describe("ProjectScene - Action Handlers", () => {
 
     // Обновляем контекст с данными для callback query
     sceneTester.updateContext({
-      callbackQueryData: "project_1",
-      matchData: ["project_1", "1"],
+      callbackQueryData: 'project_1',
+      matchData: ['project_1', '1'],
     });
 
     // Вызываем обработчик действия
-    await sceneTester.callSceneMethod("handleSelectProjectAction", sceneTester.getContext());
+    await sceneTester.callSceneMethod('handleSelectProjectAction', sceneTester.getContext());
 
     // Проверяем, что были вызваны нужные методы
     expect(sceneTester.getAdapter().getUserByTelegramId).toHaveBeenCalledWith(123456789);
@@ -134,9 +160,15 @@ describe("ProjectScene - Action Handlers", () => {
     expect(sceneTester.getAdapter().close).toHaveBeenCalled();
   });
 
-  it("should handle error when project is not found", async () => {
+  it('should handle error when project is not found', async () => {
     // Настраиваем моки для сценария с ошибкой
-    const mockUser = { id: 1, telegram_id: 123456789, username: "testuser", created_at: new Date().toISOString(), is_active: true };
+    const mockUser = {
+      id: 1,
+      telegram_id: 123456789,
+      username: 'testuser',
+      created_at: new Date().toISOString(),
+      is_active: true,
+    };
 
     sceneTester.updateAdapter({
       getUserByTelegramId: jest.fn().mockResolvedValue(mockUser),
@@ -145,17 +177,17 @@ describe("ProjectScene - Action Handlers", () => {
 
     // Обновляем контекст с данными для callback query
     sceneTester.updateContext({
-      callbackQueryData: "project_1",
-      matchData: ["project_1", "1"],
+      callbackQueryData: 'project_1',
+      matchData: ['project_1', '1'],
     });
 
     // Вызываем обработчик действия
-    await sceneTester.callSceneMethod("handleSelectProjectAction", sceneTester.getContext());
+    await sceneTester.callSceneMethod('handleSelectProjectAction', sceneTester.getContext());
 
     // Проверяем, что были вызваны нужные методы
     expect(sceneTester.getAdapter().getUserByTelegramId).toHaveBeenCalledWith(123456789);
     expect(sceneTester.getAdapter().getProjectById).toHaveBeenCalledWith(1);
-    expect(sceneTester.getContext().reply).toHaveBeenCalledWith(expect.stringContaining("ошибка"));
+    expect(sceneTester.getContext().reply).toHaveBeenCalledWith(expect.stringContaining('ошибка'));
     expect(sceneTester.getContext().answerCbQuery).toHaveBeenCalled();
     expect(sceneTester.getAdapter().close).toHaveBeenCalled();
   });
@@ -178,28 +210,40 @@ describe("ProjectScene - Action Handlers", () => {
 ### Пример реализации:
 
 ```typescript
-import { describe, it, expect, beforeEach } from "bun:test";
-import { SceneTester } from "../../helpers/telegram";
-import { ProjectScene } from "../../../scenes/project-scene";
-import { ScraperSceneStep } from "../../../types";
+import { describe, it, expect, beforeEach } from 'bun:test';
+import { SceneTester } from '../../helpers/telegram';
+import { ProjectScene } from '../../../scenes/project-scene';
+import { ScraperSceneStep } from '../../../types';
 
-describe("ProjectScene - Text Input Handler", () => {
+describe('ProjectScene - Text Input Handler', () => {
   let sceneTester: SceneTester<ProjectScene>;
 
   beforeEach(() => {
     sceneTester = new SceneTester({
-      sceneName: "ProjectScene",
-      sceneFilePath: "../../../scenes/project-scene",
-      sceneConstructor: ProjectScene
+      sceneName: 'ProjectScene',
+      sceneFilePath: '../../../scenes/project-scene',
+      sceneConstructor: ProjectScene,
     });
-    
+
     sceneTester.resetMocks();
   });
 
-  it("should handle project creation", async () => {
+  it('should handle project creation', async () => {
     // Настраиваем моки для успешного сценария
-    const mockUser = { id: 1, telegram_id: 123456789, username: "testuser", created_at: new Date().toISOString(), is_active: true };
-    const mockProject = { id: 1, user_id: 1, name: "New Project", created_at: new Date().toISOString(), is_active: true };
+    const mockUser = {
+      id: 1,
+      telegram_id: 123456789,
+      username: 'testuser',
+      created_at: new Date().toISOString(),
+      is_active: true,
+    };
+    const mockProject = {
+      id: 1,
+      user_id: 1,
+      name: 'New Project',
+      created_at: new Date().toISOString(),
+      is_active: true,
+    };
 
     sceneTester.updateAdapter({
       getUserByTelegramId: jest.fn().mockResolvedValue(mockUser),
@@ -208,7 +252,7 @@ describe("ProjectScene - Text Input Handler", () => {
 
     // Обновляем контекст с нужным шагом
     sceneTester.updateContext({
-      messageText: "New Project",
+      messageText: 'New Project',
       sessionData: {
         step: ScraperSceneStep.CREATE_PROJECT,
         userId: 1,
@@ -216,19 +260,21 @@ describe("ProjectScene - Text Input Handler", () => {
     });
 
     // Вызываем обработчик текстового сообщения
-    await sceneTester.callSceneMethod("handleProjectSceneText", sceneTester.getContext());
+    await sceneTester.callSceneMethod('handleProjectSceneText', sceneTester.getContext());
 
     // Проверяем, что были вызваны нужные методы
     expect(sceneTester.getAdapter().getUserByTelegramId).toHaveBeenCalledWith(123456789);
-    expect(sceneTester.getAdapter().createProject).toHaveBeenCalledWith(1, "New Project");
-    expect(sceneTester.getContext().reply).toHaveBeenCalledWith(expect.stringContaining("успешно создан"));
+    expect(sceneTester.getAdapter().createProject).toHaveBeenCalledWith(1, 'New Project');
+    expect(sceneTester.getContext().reply).toHaveBeenCalledWith(
+      expect.stringContaining('успешно создан')
+    );
     expect(sceneTester.getAdapter().close).toHaveBeenCalled();
   });
 
-  it("should do nothing if step is not CREATE_PROJECT", async () => {
+  it('should do nothing if step is not CREATE_PROJECT', async () => {
     // Обновляем контекст с другим шагом
     sceneTester.updateContext({
-      messageText: "New Project",
+      messageText: 'New Project',
       sessionData: {
         step: ScraperSceneStep.PROJECT_LIST,
         userId: 1,
@@ -236,7 +282,7 @@ describe("ProjectScene - Text Input Handler", () => {
     });
 
     // Вызываем обработчик текстового сообщения
-    await sceneTester.callSceneMethod("handleProjectSceneText", sceneTester.getContext());
+    await sceneTester.callSceneMethod('handleProjectSceneText', sceneTester.getContext());
 
     // Проверяем, что не были вызваны методы адаптера
     expect(sceneTester.getAdapter().getUserByTelegramId).not.toHaveBeenCalled();
@@ -261,23 +307,40 @@ describe("ProjectScene - Text Input Handler", () => {
 ### Пример реализации:
 
 ```typescript
-import { describe, it, expect, beforeEach } from "bun:test";
-import { SceneTester, SceneSequenceTester, expectSceneStep, expectMessageContaining } from "../../helpers/telegram";
-import { ProjectScene } from "../../../scenes/project-scene";
-import { ScraperSceneStep } from "../../../types";
+import { describe, it, expect, beforeEach } from 'bun:test';
+import {
+  SceneTester,
+  SceneSequenceTester,
+  expectSceneStep,
+  expectMessageContaining,
+} from '../../helpers/telegram';
+import { ProjectScene } from '../../../scenes/project-scene';
+import { ScraperSceneStep } from '../../../types';
 
-describe("ProjectScene - Full Scenario", () => {
-  it("should handle full project creation scenario", async () => {
+describe('ProjectScene - Full Scenario', () => {
+  it('should handle full project creation scenario', async () => {
     // Создаем тестер сцены
     const sceneTester = new SceneTester({
-      sceneName: "ProjectScene",
-      sceneFilePath: "../../../scenes/project-scene",
-      sceneConstructor: ProjectScene
+      sceneName: 'ProjectScene',
+      sceneFilePath: '../../../scenes/project-scene',
+      sceneConstructor: ProjectScene,
     });
 
     // Настраиваем моки
-    const mockUser = { id: 1, telegram_id: 123456789, username: "testuser", created_at: new Date().toISOString(), is_active: true };
-    const mockProject = { id: 1, user_id: 1, name: "New Project", created_at: new Date().toISOString(), is_active: true };
+    const mockUser = {
+      id: 1,
+      telegram_id: 123456789,
+      username: 'testuser',
+      created_at: new Date().toISOString(),
+      is_active: true,
+    };
+    const mockProject = {
+      id: 1,
+      user_id: 1,
+      name: 'New Project',
+      created_at: new Date().toISOString(),
+      is_active: true,
+    };
 
     sceneTester.updateAdapter({
       getUserByTelegramId: jest.fn().mockResolvedValue(mockUser),
@@ -290,35 +353,30 @@ describe("ProjectScene - Full Scenario", () => {
 
     // Добавляем шаги в последовательность
     sequenceTester
-      .addSceneEnter(
-        "Enter scene",
-        "enterHandler",
-        {},
-        (tester) => {
-          expectMessageContaining(tester.getContext(), "У вас нет проектов");
-        }
-      )
+      .addSceneEnter('Enter scene', 'enterHandler', {}, tester => {
+        expectMessageContaining(tester.getContext(), 'У вас нет проектов');
+      })
       .addButtonClick(
-        "Click create project button",
-        "create_project",
-        "handleCreateProjectAction" as keyof ProjectScene,
+        'Click create project button',
+        'create_project',
+        'handleCreateProjectAction' as keyof ProjectScene,
         {},
-        (tester) => {
+        tester => {
           expectSceneStep(tester.getContext(), ScraperSceneStep.CREATE_PROJECT);
-          expectMessageContaining(tester.getContext(), "Введите название проекта");
+          expectMessageContaining(tester.getContext(), 'Введите название проекта');
         }
       )
       .addTextInput(
-        "Enter project name",
-        "New Project",
-        "handleProjectSceneText" as keyof ProjectScene,
+        'Enter project name',
+        'New Project',
+        'handleProjectSceneText' as keyof ProjectScene,
         {
           sessionData: {
-            step: ScraperSceneStep.CREATE_PROJECT
-          }
+            step: ScraperSceneStep.CREATE_PROJECT,
+          },
         },
-        (tester) => {
-          expectMessageContaining(tester.getContext(), "Проект успешно создан");
+        tester => {
+          expectMessageContaining(tester.getContext(), 'Проект успешно создан');
         }
       );
 
@@ -343,35 +401,41 @@ describe("ProjectScene - Full Scenario", () => {
 ### Пример реализации:
 
 ```typescript
-import { describe, it, expect, beforeEach } from "bun:test";
-import { SceneTester } from "../../helpers/telegram";
-import { ProjectScene } from "../../../scenes/project-scene";
+import { describe, it, expect, beforeEach } from 'bun:test';
+import { SceneTester } from '../../helpers/telegram';
+import { ProjectScene } from '../../../scenes/project-scene';
 
-describe("ProjectScene - Error Handling", () => {
+describe('ProjectScene - Error Handling', () => {
   let sceneTester: SceneTester<ProjectScene>;
 
   beforeEach(() => {
     sceneTester = new SceneTester({
-      sceneName: "ProjectScene",
-      sceneFilePath: "../../../scenes/project-scene",
-      sceneConstructor: ProjectScene
+      sceneName: 'ProjectScene',
+      sceneFilePath: '../../../scenes/project-scene',
+      sceneConstructor: ProjectScene,
     });
-    
+
     sceneTester.resetMocks();
   });
 
-  it("should handle database error during project creation", async () => {
+  it('should handle database error during project creation', async () => {
     // Настраиваем моки для сценария с ошибкой
-    const mockUser = { id: 1, telegram_id: 123456789, username: "testuser", created_at: new Date().toISOString(), is_active: true };
+    const mockUser = {
+      id: 1,
+      telegram_id: 123456789,
+      username: 'testuser',
+      created_at: new Date().toISOString(),
+      is_active: true,
+    };
 
     sceneTester.updateAdapter({
       getUserByTelegramId: jest.fn().mockResolvedValue(mockUser),
-      createProject: jest.fn().mockRejectedValue(new Error("Database error")),
+      createProject: jest.fn().mockRejectedValue(new Error('Database error')),
     });
 
     // Обновляем контекст с нужным шагом
     sceneTester.updateContext({
-      messageText: "New Project",
+      messageText: 'New Project',
       sessionData: {
         step: ScraperSceneStep.CREATE_PROJECT,
         userId: 1,
@@ -379,16 +443,16 @@ describe("ProjectScene - Error Handling", () => {
     });
 
     // Вызываем обработчик текстового сообщения
-    await sceneTester.callSceneMethod("handleProjectSceneText", sceneTester.getContext());
+    await sceneTester.callSceneMethod('handleProjectSceneText', sceneTester.getContext());
 
     // Проверяем, что были вызваны нужные методы
     expect(sceneTester.getAdapter().getUserByTelegramId).toHaveBeenCalledWith(123456789);
-    expect(sceneTester.getAdapter().createProject).toHaveBeenCalledWith(1, "New Project");
-    expect(sceneTester.getContext().reply).toHaveBeenCalledWith(expect.stringContaining("ошибка"));
+    expect(sceneTester.getAdapter().createProject).toHaveBeenCalledWith(1, 'New Project');
+    expect(sceneTester.getContext().reply).toHaveBeenCalledWith(expect.stringContaining('ошибка'));
     expect(sceneTester.getAdapter().close).toHaveBeenCalled();
   });
 
-  it("should handle error when user is not found", async () => {
+  it('should handle error when user is not found', async () => {
     // Настраиваем моки для сценария с ошибкой
     sceneTester.updateAdapter({
       getUserByTelegramId: jest.fn().mockResolvedValue(null),
@@ -396,7 +460,7 @@ describe("ProjectScene - Error Handling", () => {
 
     // Обновляем контекст с нужным шагом
     sceneTester.updateContext({
-      messageText: "New Project",
+      messageText: 'New Project',
       sessionData: {
         step: ScraperSceneStep.CREATE_PROJECT,
         userId: 1,
@@ -404,11 +468,11 @@ describe("ProjectScene - Error Handling", () => {
     });
 
     // Вызываем обработчик текстового сообщения
-    await sceneTester.callSceneMethod("handleProjectSceneText", sceneTester.getContext());
+    await sceneTester.callSceneMethod('handleProjectSceneText', sceneTester.getContext());
 
     // Проверяем, что были вызваны нужные методы
     expect(sceneTester.getAdapter().getUserByTelegramId).toHaveBeenCalledWith(123456789);
-    expect(sceneTester.getContext().reply).toHaveBeenCalledWith(expect.stringContaining("ошибка"));
+    expect(sceneTester.getContext().reply).toHaveBeenCalledWith(expect.stringContaining('ошибка'));
     expect(sceneTester.getAdapter().close).toHaveBeenCalled();
   });
 });

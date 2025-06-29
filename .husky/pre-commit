@@ -1,0 +1,11 @@
+# 🕉️ Sacred Pre-commit Ritual
+echo "🧘‍♂️ Performing sacred pre-commit checks..."
+
+# Run lint-staged for formatting and basic checks
+bunx lint-staged
+
+# Ensure TypeScript compiles without errors
+echo "🔍 Checking TypeScript enlightenment..."
+bun run typecheck
+
+echo "✨ Pre-commit ritual completed successfully!"

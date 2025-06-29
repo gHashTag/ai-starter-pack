@@ -4,13 +4,13 @@ import {
   /* expect, */ mock,
   beforeEach,
   jest /*, spyOn */,
-} from "bun:test";
+} from 'bun:test';
 // import { Telegraf /*, Markup */ } from "telegraf"; // Commented out
 // import { setupTelegramBot } from "../../../index"; // Commented out
 // import type { BaseBotContext, BotConfig, StorageAdapter } from "@/types"; // Commented out
 // import { MemoryAdapter } from "@/adapters/memory-adapter"; // Commented out
 
-describe("Telegram Bot Setup", () => {
+describe('Telegram Bot Setup', () => {
   // let bot: Telegraf<BaseBotContext>; // Commented out
   // let storageAdapter: StorageAdapter; // Commented out
   // let config: BotConfig; // Commented out
@@ -28,8 +28,8 @@ describe("Telegram Bot Setup", () => {
     // } as BotConfig;
 
     mockStageMiddleware = jest.fn(() => jest.fn());
-    const actualTelegraf = await import("telegraf");
-    mock.module("telegraf", () => {
+    const actualTelegraf = await import('telegraf');
+    mock.module('telegraf', () => {
       return {
         ...actualTelegraf,
         Scenes: {
@@ -48,27 +48,27 @@ describe("Telegram Bot Setup", () => {
   // All tests using setupTelegramBot are now effectively disabled
   // TODO: Re-evaluate how to test bot setup and basic commands
 
-  it.skip("should initialize the bot with storage adapter and config in middleware", () => {
+  it.skip('should initialize the bot with storage adapter and config in middleware', () => {
     // setupTelegramBot(bot, storageAdapter, config); // Commented out
     // ... rest of the test
   });
 
-  it.skip("should register stage middleware", () => {
+  it.skip('should register stage middleware', () => {
     // setupTelegramBot(bot, storageAdapter, config); // Commented out
     // ... rest of the test
   });
 
-  it.skip("should register /start command handler", () => {
+  it.skip('should register /start command handler', () => {
     // setupTelegramBot(bot, storageAdapter, config); // Commented out
     // ... rest of the test
   });
 
-  it.skip("should register /help command handler", () => {
+  it.skip('should register /help command handler', () => {
     // setupTelegramBot(bot, storageAdapter, config); // Commented out
     // ... rest of the test
   });
 
-  it.skip("should register a global error handler", () => {
+  it.skip('should register a global error handler', () => {
     // setupTelegramBot(bot, storageAdapter, config); // Commented out
     // ... rest of the test
   });

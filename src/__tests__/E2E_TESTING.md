@@ -45,15 +45,20 @@ src/__tests__/e2e/
 Перед созданием E2E тестов необходимо настроить окружение. Это включает в себя мокирование Telegram API и адаптера хранилища:
 
 ```typescript
-import { describe, it, expect, beforeEach, mock, jest, SpyInstance } from "bun:test";
-import { Telegraf } from "telegraf";
-import { setupInstagramScraperBot } from "../../..";
-import { Update, UserFromGetMe } from "telegraf/types";
-import type { ScraperBotContext, InstagramScraperBotConfig, StorageAdapter, User } from "../../types";
-import { NeonAdapter } from "../../adapters/neon-adapter";
+import { describe, it, expect, beforeEach, mock, jest, SpyInstance } from 'bun:test';
+import { Telegraf } from 'telegraf';
+import { setupInstagramScraperBot } from '../../..';
+import { Update, UserFromGetMe } from 'telegraf/types';
+import type {
+  ScraperBotContext,
+  InstagramScraperBotConfig,
+  StorageAdapter,
+  User,
+} from '../../types';
+import { NeonAdapter } from '../../adapters/neon-adapter';
 
 // Мокируем адаптер хранилища
-mock.module("../../adapters/neon-adapter", () => {
+mock.module('../../adapters/neon-adapter', () => {
   return {
     NeonAdapter: jest.fn().mockImplementation(() => ({
       initialize: jest.fn().mockResolvedValue(undefined),
@@ -73,7 +78,7 @@ mock.module("../../adapters/neon-adapter", () => {
   };
 });
 
-describe("E2E: Bot Interaction", () => {
+describe('E2E: Bot Interaction', () => {
   let bot: Telegraf<ScraperBotContext>;
   let mockAdapterInstance: StorageAdapter & {
     [key: string]: jest.Mock | SpyInstance<any[], any>;
@@ -87,12 +92,12 @@ describe("E2E: Bot Interaction", () => {
 
   beforeEach(async () => {
     // Создаем экземпляр бота
-    bot = new Telegraf<ScraperBotContext>("test-bot-token");
+    bot = new Telegraf<ScraperBotContext>('test-bot-token');
     bot.telegram.getMe = jest.fn().mockResolvedValue({
       id: 987654321,
       is_bot: true,
-      first_name: "TestBot",
-      username: "TestBot_username",
+      first_name: 'TestBot',
+      username: 'TestBot_username',
       can_join_groups: true,
       can_read_all_group_messages: false,
       supports_inline_queries: false,
@@ -109,16 +114,16 @@ describe("E2E: Bot Interaction", () => {
     (mockAdapterInstance.findUserByTelegramIdOrCreate as jest.Mock).mockResolvedValue({
       id: 1,
       telegram_id: mockUserIdFromUpdate,
-      username: "testuser",
+      username: 'testuser',
       created_at: new Date().toISOString(),
-      is_active: true
+      is_active: true,
     });
     (mockAdapterInstance.getProjectsByUserId as jest.Mock).mockResolvedValue([]);
 
     // Настраиваем бота с мок-адаптером
     setupInstagramScraperBot(bot, mockAdapterInstance, {
-      telegramBotToken: "test-e2e-bot-token",
-      apifyClientToken: "test-token",
+      telegramBotToken: 'test-e2e-bot-token',
+      apifyClientToken: 'test-token',
     });
 
     // Мокируем методы API Telegram
@@ -140,7 +145,7 @@ describe("E2E: Bot Interaction", () => {
 Пример теста для команды `/start`:
 
 ```typescript
-it("should respond to /start command", async () => {
+it('should respond to /start command', async () => {
   // Создаем объект Update для имитации команды /start
   const update: Update = {
     update_id: 123456,
@@ -151,23 +156,23 @@ it("should respond to /start command", async () => {
         id: mockChatId,
         type: 'private',
         first_name: 'Test',
-        username: 'testuser'
+        username: 'testuser',
       },
       from: {
         id: mockUserIdFromUpdate,
         is_bot: false,
         first_name: 'Test',
-        username: 'testuser'
+        username: 'testuser',
       },
       text: '/start',
       entities: [
         {
           offset: 0,
           length: 6,
-          type: 'bot_command'
-        }
-      ]
-    }
+          type: 'bot_command',
+        },
+      ],
+    },
   };
 
   // Вызываем обработчик команды /start
@@ -179,7 +184,7 @@ it("should respond to /start command", async () => {
     mockUserIdFromUpdate,
     'testuser'
   );
-  
+
   // Проверяем, что было отправлено приветственное сообщение
   expect(mockSendMessage).toHaveBeenCalledWith(
     mockChatId,
@@ -188,10 +193,10 @@ it("should respond to /start command", async () => {
       reply_markup: expect.objectContaining({
         keyboard: expect.arrayContaining([
           expect.arrayContaining([
-            expect.objectContaining({ text: expect.stringContaining('Проекты') })
-          ])
-        ])
-      })
+            expect.objectContaining({ text: expect.stringContaining('Проекты') }),
+          ]),
+        ]),
+      }),
     })
   );
 });
@@ -202,14 +207,14 @@ it("should respond to /start command", async () => {
 Пример теста для нажатия на кнопку в меню проектов:
 
 ```typescript
-it("should handle project selection", async () => {
+it('should handle project selection', async () => {
   // Настраиваем мок для getProjectById
   const mockProject = {
     id: 1,
     user_id: 1,
     name: 'Test Project',
     created_at: new Date().toISOString(),
-    is_active: true
+    is_active: true,
   };
   (mockAdapterInstance.getProjectById as jest.Mock).mockResolvedValue(mockProject);
 
@@ -222,7 +227,7 @@ it("should handle project selection", async () => {
         id: mockUserIdFromUpdate,
         is_bot: false,
         first_name: 'Test',
-        username: 'testuser'
+        username: 'testuser',
       },
       message: {
         message_id: 2,
@@ -231,14 +236,14 @@ it("should handle project selection", async () => {
           id: mockChatId,
           type: 'private',
           first_name: 'Test',
-          username: 'testuser'
+          username: 'testuser',
         },
         text: 'Ваши проекты:',
-        entities: []
+        entities: [],
       },
       chat_instance: '123456',
-      data: 'project_1'
-    }
+      data: 'project_1',
+    },
   };
 
   // Вызываем обработчик нажатия на кнопку
@@ -251,7 +256,7 @@ it("should handle project selection", async () => {
     'testuser'
   );
   expect(mockAdapterInstance.getProjectById).toHaveBeenCalledWith(1);
-  
+
   // Проверяем, что было отправлено сообщение с меню проекта
   expect(mockSendMessage).toHaveBeenCalledWith(
     mockChatId,
@@ -260,16 +265,16 @@ it("should handle project selection", async () => {
       reply_markup: expect.objectContaining({
         inline_keyboard: expect.arrayContaining([
           expect.arrayContaining([
-            expect.objectContaining({ text: expect.stringContaining('Конкуренты') })
+            expect.objectContaining({ text: expect.stringContaining('Конкуренты') }),
           ]),
           expect.arrayContaining([
-            expect.objectContaining({ text: expect.stringContaining('Хештеги') })
-          ])
-        ])
-      })
+            expect.objectContaining({ text: expect.stringContaining('Хештеги') }),
+          ]),
+        ]),
+      }),
     })
   );
-  
+
   // Проверяем, что был вызван метод answerCbQuery
   expect(mockAnswerCbQuery).toHaveBeenCalledWith('123456');
 });
@@ -280,14 +285,14 @@ it("should handle project selection", async () => {
 Пример теста для ввода названия проекта:
 
 ```typescript
-it("should handle project creation", async () => {
+it('should handle project creation', async () => {
   // Настраиваем мок для createProject
   const mockProject = {
     id: 1,
     user_id: 1,
     name: 'New Project',
     created_at: new Date().toISOString(),
-    is_active: true
+    is_active: true,
   };
   (mockAdapterInstance.createProject as jest.Mock).mockResolvedValue(mockProject);
 
@@ -301,22 +306,22 @@ it("should handle project creation", async () => {
         id: mockChatId,
         type: 'private',
         first_name: 'Test',
-        username: 'testuser'
+        username: 'testuser',
       },
       from: {
         id: mockUserIdFromUpdate,
         is_bot: false,
         first_name: 'Test',
-        username: 'testuser'
+        username: 'testuser',
       },
-      text: 'New Project'
-    }
+      text: 'New Project',
+    },
   };
 
   // Устанавливаем состояние сессии
   bot.context.session = {
     step: 'CREATE_PROJECT',
-    userId: 1
+    userId: 1,
   };
 
   // Вызываем обработчик ввода текста
@@ -329,7 +334,7 @@ it("should handle project creation", async () => {
     'testuser'
   );
   expect(mockAdapterInstance.createProject).toHaveBeenCalledWith(1, 'New Project');
-  
+
   // Проверяем, что было отправлено сообщение об успешном создании проекта
   expect(mockSendMessage).toHaveBeenCalledWith(
     mockChatId,
@@ -346,25 +351,25 @@ it("should handle project creation", async () => {
 ### Использование SceneTester в E2E тестах
 
 ```typescript
-import { SceneTester } from "../helpers/telegram";
-import { ProjectScene } from "../../scenes/project-scene";
+import { SceneTester } from '../helpers/telegram';
+import { ProjectScene } from '../../scenes/project-scene';
 
-it("should test project scene in E2E context", async () => {
+it('should test project scene in E2E context', async () => {
   // Создаем тестер сцены
   const sceneTester = new SceneTester({
-    sceneName: "ProjectScene",
-    sceneFilePath: "../../scenes/project-scene",
-    sceneConstructor: ProjectScene
+    sceneName: 'ProjectScene',
+    sceneFilePath: '../../scenes/project-scene',
+    sceneConstructor: ProjectScene,
   });
 
   // Настраиваем моки
   sceneTester.updateAdapter({
     getUserByTelegramId: jest.fn().mockResolvedValue({ id: 1, telegram_id: 123456789 }),
-    getProjectsByUserId: jest.fn().mockResolvedValue([{ id: 1, name: "Test Project" }])
+    getProjectsByUserId: jest.fn().mockResolvedValue([{ id: 1, name: 'Test Project' }]),
   });
 
   // Вызываем метод сцены
-  await sceneTester.callSceneMethod("enterHandler", sceneTester.getContext());
+  await sceneTester.callSceneMethod('enterHandler', sceneTester.getContext());
 
   // Проверяем результаты
   expect(sceneTester.getAdapter().getUserByTelegramId).toHaveBeenCalledWith(123456789);
@@ -376,23 +381,28 @@ it("should test project scene in E2E context", async () => {
 ### Использование SceneSequenceTester в E2E тестах
 
 ```typescript
-import { SceneTester, SceneSequenceTester, expectSceneStep, expectMessageContaining } from "../helpers/telegram";
-import { ProjectScene } from "../../scenes/project-scene";
-import { ScraperSceneStep } from "../../types";
+import {
+  SceneTester,
+  SceneSequenceTester,
+  expectSceneStep,
+  expectMessageContaining,
+} from '../helpers/telegram';
+import { ProjectScene } from '../../scenes/project-scene';
+import { ScraperSceneStep } from '../../types';
 
-it("should test project creation sequence in E2E context", async () => {
+it('should test project creation sequence in E2E context', async () => {
   // Создаем тестер сцены
   const sceneTester = new SceneTester({
-    sceneName: "ProjectScene",
-    sceneFilePath: "../../scenes/project-scene",
-    sceneConstructor: ProjectScene
+    sceneName: 'ProjectScene',
+    sceneFilePath: '../../scenes/project-scene',
+    sceneConstructor: ProjectScene,
   });
 
   // Настраиваем моки
   sceneTester.updateAdapter({
     getUserByTelegramId: jest.fn().mockResolvedValue({ id: 1, telegram_id: 123456789 }),
     getProjectsByUserId: jest.fn().mockResolvedValue([]),
-    createProject: jest.fn().mockResolvedValue({ id: 1, name: "New Project" })
+    createProject: jest.fn().mockResolvedValue({ id: 1, name: 'New Project' }),
   });
 
   // Создаем тестер последовательностей
@@ -400,35 +410,30 @@ it("should test project creation sequence in E2E context", async () => {
 
   // Добавляем шаги в последовательность
   sequenceTester
-    .addSceneEnter(
-      "Enter scene",
-      "enterHandler",
-      {},
-      (tester) => {
-        expectMessageContaining(tester.getContext(), "У вас нет проектов");
-      }
-    )
+    .addSceneEnter('Enter scene', 'enterHandler', {}, tester => {
+      expectMessageContaining(tester.getContext(), 'У вас нет проектов');
+    })
     .addButtonClick(
-      "Click create project button",
-      "create_project",
-      "handleCreateProjectAction" as keyof ProjectScene,
+      'Click create project button',
+      'create_project',
+      'handleCreateProjectAction' as keyof ProjectScene,
       {},
-      (tester) => {
+      tester => {
         expectSceneStep(tester.getContext(), ScraperSceneStep.CREATE_PROJECT);
-        expectMessageContaining(tester.getContext(), "Введите название проекта");
+        expectMessageContaining(tester.getContext(), 'Введите название проекта');
       }
     )
     .addTextInput(
-      "Enter project name",
-      "New Project",
-      "handleProjectSceneText" as keyof ProjectScene,
+      'Enter project name',
+      'New Project',
+      'handleProjectSceneText' as keyof ProjectScene,
       {
         sessionData: {
-          step: ScraperSceneStep.CREATE_PROJECT
-        }
+          step: ScraperSceneStep.CREATE_PROJECT,
+        },
       },
-      (tester) => {
-        expectMessageContaining(tester.getContext(), "Проект успешно создан");
+      tester => {
+        expectMessageContaining(tester.getContext(), 'Проект успешно создан');
       }
     );
 

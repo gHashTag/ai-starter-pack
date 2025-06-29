@@ -82,30 +82,30 @@ bun test --watch
 - Генераторы типовых тестов
 - Подробная документация
 
-Подробная документация по фреймворку доступна в файле [src/__tests__/framework/README.md](./framework/README.md).
+Подробная документация по фреймворку доступна в файле [src/**tests**/framework/README.md](./framework/README.md).
 
 ### Примеры использования фреймворка
 
 Примеры использования фреймворка доступны в директории `src/__tests__/examples/`.
 
 ```typescript
-import { describe, it, expect, beforeEach } from "bun:test";
-import { SceneTester, expectReplyWithText } from "../../framework/telegram";
-import { projectScene } from "../../../scenes/project-scene";
+import { describe, it, expect, beforeEach } from 'bun:test';
+import { SceneTester, expectReplyWithText } from '../../framework/telegram';
+import { projectScene } from '../../../scenes/project-scene';
 
-describe("ProjectScene - Enter Handler", () => {
+describe('ProjectScene - Enter Handler', () => {
   // Создаем тестер сцены
   const sceneTester = new SceneTester({
-    sceneName: "ProjectScene",
-    sceneFilePath: "../../../scenes/project-scene",
-    sceneInstance: projectScene
+    sceneName: 'ProjectScene',
+    sceneFilePath: '../../../scenes/project-scene',
+    sceneInstance: projectScene,
   });
 
   // Создаем тестовый набор
   sceneTester.createTestSuite([
     {
-      name: "should handle enter correctly",
-      setup: (tester) => {
+      name: 'should handle enter correctly',
+      setup: tester => {
         // Настройка контекста и адаптера
         const context = tester.getContext();
         context.scene.session.currentProjectId = 1;
@@ -113,7 +113,7 @@ describe("ProjectScene - Enter Handler", () => {
         const adapter = tester.getAdapter();
         adapter.getProjectById = jest.fn().mockResolvedValue({
           id: 1,
-          name: "Test Project"
+          name: 'Test Project',
         });
       },
       test: async (scene, context, adapter) => {
@@ -121,9 +121,9 @@ describe("ProjectScene - Enter Handler", () => {
         await (scene as any).enter(context);
 
         // Проверяем результаты
-        expectReplyWithText(context, "Проект: Test Project");
-      }
-    }
+        expectReplyWithText(context, 'Проект: Test Project');
+      },
+    },
   ]);
 });
 ```
@@ -139,10 +139,10 @@ describe("ProjectScene - Enter Handler", () => {
 Для тестирования адаптеров хранилища используется подход с мокированием внешних зависимостей (например, базы данных) и проверкой корректности вызовов методов.
 
 ```typescript
-import { describe, it, expect, beforeEach, jest } from "bun:test";
-import { PostgresAdapter } from "../../../adapters/postgres-adapter";
+import { describe, it, expect, beforeEach, jest } from 'bun:test';
+import { PostgresAdapter } from '../../../adapters/postgres-adapter';
 
-describe("PostgresAdapter", () => {
+describe('PostgresAdapter', () => {
   let adapter: PostgresAdapter;
   let mockPool: any;
 
@@ -151,21 +151,20 @@ describe("PostgresAdapter", () => {
       query: jest.fn(),
       connect: jest.fn().mockResolvedValue({
         query: jest.fn(),
-        release: jest.fn()
-      })
+        release: jest.fn(),
+      }),
     };
     adapter = new PostgresAdapter(mockPool);
   });
 
-  it("should get user by telegram id", async () => {
+  it('should get user by telegram id', async () => {
     mockPool.query.mockResolvedValueOnce({ rows: [{ id: 1, telegram_id: 123456789 }] });
 
     const user = await adapter.getUserByTelegramId(123456789);
 
-    expect(mockPool.query).toHaveBeenCalledWith(
-      expect.stringContaining("SELECT * FROM users"),
-      [123456789]
-    );
+    expect(mockPool.query).toHaveBeenCalledWith(expect.stringContaining('SELECT * FROM users'), [
+      123456789,
+    ]);
     expect(user).toEqual({ id: 1, telegram_id: 123456789 });
   });
 });
@@ -176,16 +175,16 @@ describe("PostgresAdapter", () => {
 Для тестирования утилит используется подход с проверкой корректности возвращаемых значений для различных входных данных.
 
 ```typescript
-import { describe, it, expect } from "bun:test";
-import { formatDate } from "../../../utils/date-utils";
+import { describe, it, expect } from 'bun:test';
+import { formatDate } from '../../../utils/date-utils';
 
-describe("Date Utils", () => {
-  it("should format date correctly", () => {
-    const date = new Date("2023-01-01T12:00:00Z");
+describe('Date Utils', () => {
+  it('should format date correctly', () => {
+    const date = new Date('2023-01-01T12:00:00Z');
 
     const formattedDate = formatDate(date);
 
-    expect(formattedDate).toBe("01.01.2023 12:00");
+    expect(formattedDate).toBe('01.01.2023 12:00');
   });
 });
 ```
@@ -198,7 +197,7 @@ describe("Date Utils", () => {
 
 Прямой подход к тестированию сцен заключается в вызове обработчиков с мокированным контекстом, что упрощает тестирование и делает тесты более понятными:
 
-```typescript
+````typescript
 import { describe, it, expect, beforeEach, jest } from "bun:test";
 import { handleProjectEnter, handleCreateProjectAction } from "../../../scenes/project-scene";
 import { ScraperSceneStep } from "../../../types";
@@ -269,27 +268,27 @@ describe("ProjectScene - Enter Handler", () => {
     }
   ]);
 });
-```
+````
 
 #### 2.2. Тестирование последовательностей действий
 
 ```typescript
-import { describe } from "bun:test";
-import { SequenceTester, expectReplyWithText } from "../../framework/telegram";
-import { projectScene } from "../../../scenes/project-scene";
-import { ScraperSceneStep } from "../../../types";
+import { describe } from 'bun:test';
+import { SequenceTester, expectReplyWithText } from '../../framework/telegram';
+import { projectScene } from '../../../scenes/project-scene';
+import { ScraperSceneStep } from '../../../types';
 
-describe("ProjectScene - Full Scenario", () => {
+describe('ProjectScene - Full Scenario', () => {
   const sequenceTester = new SequenceTester({
-    sceneName: "ProjectScene",
-    sceneFilePath: "../../../scenes/project-scene",
-    sceneInstance: projectScene
+    sceneName: 'ProjectScene',
+    sceneFilePath: '../../../scenes/project-scene',
+    sceneInstance: projectScene,
   });
 
-  sequenceTester.testSequence("Project Creation", [
+  sequenceTester.testSequence('Project Creation', [
     {
-      name: "Enter scene",
-      action: async (tester) => {
+      name: 'Enter scene',
+      action: async tester => {
         const scene = tester.createScene();
         const context = tester.getContext();
         const adapter = tester.getAdapter();
@@ -297,42 +296,41 @@ describe("ProjectScene - Full Scenario", () => {
         // Настройка адаптера
         adapter.getUserByTelegramId = jest.fn().mockResolvedValue({
           id: 1,
-          telegram_id: 123456789
+          telegram_id: 123456789,
         });
         adapter.getProjectsByUserId = jest.fn().mockResolvedValue([]);
 
         // Вызываем метод enter
         await (scene as any).enter(context);
       },
-      assertions: (tester) => {
+      assertions: tester => {
         const context = tester.getContext();
-        expectReplyWithText(context, "У вас еще нет проектов");
-      }
+        expectReplyWithText(context, 'У вас еще нет проектов');
+      },
     },
     {
-      name: "Click create project button",
-      action: async (tester) => {
+      name: 'Click create project button',
+      action: async tester => {
         const scene = tester.createScene();
         const context = tester.getContext();
 
         // Настройка контекста
         context.callbackQuery = {
           ...context.callbackQuery,
-          data: "create_project"
+          data: 'create_project',
         };
 
         // Вызываем обработчик
         await (scene as any).handleCreateProjectAction(context);
       },
-      assertions: (tester) => {
+      assertions: tester => {
         const context = tester.getContext();
         expect(context.scene.session.step).toBe(ScraperSceneStep.CREATE_PROJECT);
-        expectReplyWithText(context, "Введите название");
-      }
-    }
+        expectReplyWithText(context, 'Введите название');
+      },
+    },
   ]);
 });
-
 ```
 
 ### 3. Интеграционное тестирование
@@ -342,49 +340,53 @@ describe("ProjectScene - Full Scenario", () => {
 #### 3.1. Тестирование взаимодействия адаптера с базой данных
 
 ```typescript
-import { describe, it, expect, beforeEach, afterEach } from "bun:test";
-import { PostgresAdapter } from "../../../adapters/postgres-adapter";
-import { Pool } from "pg";
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
+import { PostgresAdapter } from '../../../adapters/postgres-adapter';
+import { Pool } from 'pg';
 
-describe("PostgresAdapter Integration", () => {
+describe('PostgresAdapter Integration', () => {
   let adapter: PostgresAdapter;
   let pool: Pool;
 
   beforeEach(async () => {
     // Создаем реальное подключение к тестовой базе данных
     pool = new Pool({
-      connectionString: process.env.TEST_DATABASE_URL
+      connectionString: process.env.TEST_DATABASE_URL,
     });
 
     adapter = new PostgresAdapter(pool);
     await adapter.initialize();
 
     // Очищаем таблицы перед каждым тестом
-    await pool.query("TRUNCATE users, projects, competitors, hashtags CASCADE");
+    await pool.query('TRUNCATE users, projects, competitors, hashtags CASCADE');
   });
 
   afterEach(async () => {
     await adapter.close();
   });
 
-  it("should create and retrieve user", async () => {
+  it('should create and retrieve user', async () => {
     // Создаем пользователя
-    const user = await adapter.findUserByTelegramIdOrCreate(123456789, "testuser");
+    const user = await adapter.findUserByTelegramIdOrCreate(123456789, 'testuser');
 
     // Проверяем, что пользователь создан
-    expect(user).toEqual(expect.objectContaining({
-      telegram_id: 123456789,
-      username: "testuser"
-    }));
+    expect(user).toEqual(
+      expect.objectContaining({
+        telegram_id: 123456789,
+        username: 'testuser',
+      })
+    );
 
     // Получаем пользователя по telegram_id
     const retrievedUser = await adapter.getUserByTelegramId(123456789);
 
     // Проверяем, что получен тот же пользователь
-    expect(retrievedUser).toEqual(expect.objectContaining({
-      telegram_id: 123456789,
-      username: "testuser"
-    }));
+    expect(retrievedUser).toEqual(
+      expect.objectContaining({
+        telegram_id: 123456789,
+        username: 'testuser',
+      })
+    );
   });
 });
 ```
@@ -396,13 +398,13 @@ E2E (End-to-End) тесты проверяют работу системы от 
 #### 4.1. Тестирование команд бота
 
 ```typescript
-import { describe, it, expect, beforeEach, mock, jest } from "bun:test";
-import { Telegraf } from "telegraf";
-import { setupInstagramScraperBot } from "../../..";
-import { Update } from "telegraf/types";
-import { NeonAdapter } from "../../adapters/neon-adapter";
+import { describe, it, expect, beforeEach, mock, jest } from 'bun:test';
+import { Telegraf } from 'telegraf';
+import { setupInstagramScraperBot } from '../../..';
+import { Update } from 'telegraf/types';
+import { NeonAdapter } from '../../adapters/neon-adapter';
 
-describe("E2E: Bot Commands", () => {
+describe('E2E: Bot Commands', () => {
   let bot: Telegraf<any>;
   let mockAdapterInstance: any;
   let mockSendMessage: jest.Mock;
@@ -421,23 +423,23 @@ describe("E2E: Bot Commands", () => {
           id: 12345,
           type: 'private',
           first_name: 'Test',
-          username: 'testuser'
+          username: 'testuser',
         },
         from: {
           id: 123456789,
           is_bot: false,
           first_name: 'Test',
-          username: 'testuser'
+          username: 'testuser',
         },
         text: '/start',
         entities: [
           {
             offset: 0,
             length: 6,
-            type: 'bot_command'
-          }
-        ]
-      }
+            type: 'bot_command',
+          },
+        ],
+      },
     };
 
     // Вызываем обработчик команды /start
@@ -457,7 +459,7 @@ describe("E2E: Bot Commands", () => {
 #### 4.2. Тестирование взаимодействия с инлайн-клавиатурой
 
 ```typescript
-it("should handle project selection", async () => {
+it('should handle project selection', async () => {
   // Создаем объект Update для имитации нажатия на кнопку
   const update: Update = {
     update_id: 123457,
@@ -467,7 +469,7 @@ it("should handle project selection", async () => {
         id: 123456789,
         is_bot: false,
         first_name: 'Test',
-        username: 'testuser'
+        username: 'testuser',
       },
       message: {
         message_id: 2,
@@ -476,14 +478,14 @@ it("should handle project selection", async () => {
           id: 12345,
           type: 'private',
           first_name: 'Test',
-          username: 'testuser'
+          username: 'testuser',
         },
         text: 'Ваши проекты:',
-        entities: []
+        entities: [],
       },
       chat_instance: '123456',
-      data: 'project_1'
-    }
+      data: 'project_1',
+    },
   };
 
   // Вызываем обработчик нажатия на кнопку
@@ -504,23 +506,20 @@ it("should handle project selection", async () => {
 E2E тесты могут быть интегрированы с фреймворком для тестирования Telegram-сцен для упрощения тестирования сложных сценариев:
 
 ```typescript
-import { SceneTester, SceneSequenceTester } from "../../helpers/telegram";
+import { SceneTester, SceneSequenceTester } from '../../helpers/telegram';
 
-it("should test project creation sequence", async () => {
+it('should test project creation sequence', async () => {
   // Создаем тестер сцены и последовательностей
   const sceneTester = new SceneTester({
-    sceneName: "ProjectScene",
-    sceneFilePath: "../../scenes/project-scene",
-    sceneConstructor: ProjectScene
+    sceneName: 'ProjectScene',
+    sceneFilePath: '../../scenes/project-scene',
+    sceneConstructor: ProjectScene,
   });
 
   const sequenceTester = new SceneSequenceTester(sceneTester);
 
   // Добавляем шаги в последовательность
-  sequenceTester
-    .addSceneEnter(/* ... */)
-    .addButtonClick(/* ... */)
-    .addTextInput(/* ... */);
+  sequenceTester.addSceneEnter(/* ... */).addButtonClick(/* ... */).addTextInput(/* ... */);
 
   // Запускаем последовательность
   await sequenceTester.run();
@@ -528,6 +527,7 @@ it("should test project creation sequence", async () => {
 ```
 
 Подробная документация по E2E тестированию доступна в файле [E2E_TESTING.md](./E2E_TESTING.md).
+
 ```
 
 ## Лучшие практики тестирования
@@ -546,3 +546,4 @@ it("should test project creation sequence", async () => {
 - [Документация по фреймворку для тестирования Telegram-ботов](./framework/README.md)
 - [Примеры использования фреймворка](./examples/)
 - [Примеры тестов в проекте](./unit/scenes/)
+```

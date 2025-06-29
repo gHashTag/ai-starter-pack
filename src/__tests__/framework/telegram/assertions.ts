@@ -3,8 +3,8 @@
  * @description Содержит функции для проверки вызовов методов контекста
  */
 
-import { expect } from "bun:test";
-import { MockedTelegramContext } from "./types";
+import { expect } from 'bun:test';
+import { MockedTelegramContext } from './types';
 
 /**
  * Проверяет, что был вызван метод reply с указанным текстом
@@ -25,7 +25,7 @@ export function expectReplyWithText(
   // Получаем аргументы вызова
   const calls = ctx.reply.mock.calls;
   expect(calls.length).toBeGreaterThan(callIndex);
-  
+
   const args = calls[callIndex];
   const replyText = args[0];
 
@@ -64,7 +64,7 @@ export function expectReplyWithKeyboard(
   // Получаем аргументы вызова
   const calls = ctx.reply.mock.calls;
   expect(calls.length).toBeGreaterThan(callIndex);
-  
+
   const args = calls[callIndex];
   const replyOptions = args[1];
 
@@ -101,7 +101,7 @@ export function expectAnswerCbQuery(
   // Получаем аргументы вызова
   const calls = ctx.answerCbQuery.mock.calls;
   expect(calls.length).toBeGreaterThan(callIndex);
-  
+
   const args = calls[callIndex];
   const answerText = args[0];
 
@@ -140,7 +140,7 @@ export function expectSceneEnter(
   // Получаем аргументы вызова
   const calls = ctx.scene.enter.mock.calls;
   expect(calls.length).toBeGreaterThan(callIndex);
-  
+
   const args = calls[callIndex];
   const enteredSceneName = args[0];
 
@@ -195,7 +195,7 @@ export function expectEditMessageText(
   // Получаем аргументы вызова
   const calls = ctx.editMessageText.mock.calls;
   expect(calls.length).toBeGreaterThan(callIndex);
-  
+
   const args = calls[callIndex];
   const editText = args[0];
 

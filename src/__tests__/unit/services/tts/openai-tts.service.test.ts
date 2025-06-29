@@ -53,4 +53,4 @@ describe('TTS Types and Enums', () => {
       expect(ttsError.name).toBe('TTSError');
     });
   });
-}); 
+});

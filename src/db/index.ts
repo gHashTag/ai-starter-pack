@@ -2,16 +2,16 @@
  * Инициализация подключения к базе данных Neon с помощью Drizzle ORM
  */
 
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-import { config } from "../config";
-import { logger, LogType } from "../utils/logger";
-import * as schema from "./schema";
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import { config } from '../config';
+import { logger, LogType } from '../utils/logger';
+import * as schema from './schema';
 
 // Проверяем наличие URL для подключения к базе данных
-if (!config.DATABASE_URL && process.env.NODE_ENV !== "test") {
+if (!config.DATABASE_URL && process.env.NODE_ENV !== 'test') {
   logger.warn(
-    "DATABASE_URL не указан. База данных не будет подключена. Используйте MemoryAdapter для тестирования.",
+    'DATABASE_URL не указан. База данных не будет подключена. Используйте MemoryAdapter для тестирования.',
     { type: LogType.SYSTEM }
   );
 }
@@ -38,13 +38,13 @@ export async function testConnection(): Promise<boolean> {
 
   try {
     // Пробуем выполнить простой запрос
-    await pool.query("SELECT 1");
-    logger.info("Соединение с базой данных успешно установлено", {
+    await pool.query('SELECT 1');
+    logger.info('Соединение с базой данных успешно установлено', {
       type: LogType.SYSTEM,
     });
     return true;
   } catch (error) {
-    logger.error("Ошибка при подключении к базе данных", {
+    logger.error('Ошибка при подключении к базе данных', {
       error: error instanceof Error ? error : new Error(String(error)),
       type: LogType.ERROR,
     });
@@ -58,7 +58,7 @@ export async function testConnection(): Promise<boolean> {
 export async function closeConnection(): Promise<void> {
   if (pool) {
     await pool.end();
-    logger.info("Соединение с базой данных закрыто", {
+    logger.info('Соединение с базой данных закрыто', {
       type: LogType.SYSTEM,
     });
   }

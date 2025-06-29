@@ -3,15 +3,15 @@
  * @description Содержит класс для тестирования последовательностей действий в Telegram-сценах
  */
 
-import { describe, it, beforeEach, afterEach, jest } from "bun:test";
+import { describe, it, beforeEach, afterEach, jest } from 'bun:test';
 import {
   MockedTelegramContext,
   MockedStorageAdapter,
   SceneTestOptions,
   SequenceStep,
-} from "./types";
-import { createMockContext, createMockAdapter, resetAllMocks } from "./mocks";
-import { Scenes } from "telegraf";
+} from './types';
+import { createMockContext, createMockAdapter, resetAllMocks } from './mocks';
+import { Scenes } from 'telegraf';
 
 /**
  * Класс для тестирования последовательностей действий в Telegram-сценах
@@ -53,7 +53,7 @@ export class SequenceTester<T extends Scenes.WizardContext> {
     }
 
     if (!this.sceneConstructor) {
-      throw new Error("Не указан конструктор сцены");
+      throw new Error('Не указан конструктор сцены');
     }
 
     return new this.sceneConstructor(this.mockAdapter, ...this.constructorArgs);
@@ -153,12 +153,12 @@ export class SequenceTester<T extends Scenes.WizardContext> {
         // Вызываем обработчик текстовых сообщений сцены
         const handler =
           (this.sceneInstance as any).onTextMessage ||
-          (this.sceneInstance as any).handlers?.get("text");
+          (this.sceneInstance as any).handlers?.get('text');
         if (handler) {
           await handler(ctx);
         } else {
           console.warn(
-            "No text message handler found on scene for createTextMessageStep"
+            'No text message handler found on scene for createTextMessageStep'
           );
         }
       },
@@ -222,7 +222,7 @@ export class SequenceTester<T extends Scenes.WizardContext> {
    */
   createEnterSceneStep(): SequenceStep {
     return {
-      name: "enters scene",
+      name: 'enters scene',
       action: async (ctx: MockedTelegramContext) => {
         // Вызываем метод enter
         if ((this.sceneInstance as any).enter) {

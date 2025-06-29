@@ -1,11 +1,11 @@
-import { z } from "zod";
+import { z } from 'zod';
 import {
   UserSchema,
   UserSettingsSchema,
   SceneStateSchema,
   ActivityLogSchema,
   NotificationSettingsSchema,
-} from "../schemas";
+} from '../schemas';
 
 /**
  * Валидирует данные с помощью Zod схемы
@@ -86,7 +86,7 @@ export function validateArray<T>(schema: z.ZodType<T>, data: unknown): T[] {
     // Если валидация массива не удалась, пробуем валидировать каждый элемент отдельно
     if (Array.isArray(data)) {
       return data
-        .map((item) => {
+        .map(item => {
           try {
             return schema.parse(item);
           } catch {

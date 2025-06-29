@@ -5,10 +5,10 @@
  * с автоматической обработкой ошибок и логированием.
  */
 
-import { Scenes } from "telegraf";
-import { logger, LogType } from "./logger";
-import type { Middleware } from "telegraf";
-import { BaseBotContext } from "../types";
+import { Scenes } from 'telegraf';
+import { logger, LogType } from './logger';
+import type { Middleware } from 'telegraf';
+import { BaseBotContext } from '../types';
 
 /**
  * Тип обработчика кнопки
@@ -27,7 +27,7 @@ interface DataQuery {
  * Проверка наличия data в callback query
  */
 function isDataQuery(query: any): query is DataQuery {
-  return query && typeof query.data === "string";
+  return query && typeof query.data === 'string';
 }
 
 /**
@@ -38,10 +38,10 @@ function isDataQuery(query: any): query is DataQuery {
 function generateErrorId(): string {
   const randomPart1 = Math.floor(Math.random() * 10000)
     .toString()
-    .padStart(4, "0");
+    .padStart(4, '0');
   const randomPart2 = Math.floor(Math.random() * 10000)
     .toString()
-    .padStart(4, "0");
+    .padStart(4, '0');
   return `ERR-${randomPart1}-${randomPart2}`;
 }
 
@@ -145,10 +145,10 @@ export function createButtonHandler<T extends BaseBotContext>(
   const {
     id,
     handler,
-    errorMessage = "Произошла ошибка при обработке действия. Попробуйте еще раз.",
+    errorMessage = 'Произошла ошибка при обработке действия. Попробуйте еще раз.',
     leaveSceneOnError = true,
     answerCallbackOnError = true,
-    errorCallbackText = "Ошибка",
+    errorCallbackText = 'Ошибка',
     verbose = false,
     errorHandling = {},
   } = options;
@@ -160,9 +160,9 @@ export function createButtonHandler<T extends BaseBotContext>(
     answerCallbackOnError,
     errorCallbackText,
     showRetryButton: errorHandling.showRetryButton ?? false,
-    retryButtonText: errorHandling.retryButtonText ?? "Повторить",
+    retryButtonText: errorHandling.retryButtonText ?? 'Повторить',
     showCancelButton: errorHandling.showCancelButton ?? false,
-    cancelButtonText: errorHandling.cancelButtonText ?? "Отмена",
+    cancelButtonText: errorHandling.cancelButtonText ?? 'Отмена',
     onCancel: errorHandling.onCancel,
     sendErrorReport: errorHandling.sendErrorReport ?? false,
     adminUserId: errorHandling.adminUserId,
@@ -170,7 +170,7 @@ export function createButtonHandler<T extends BaseBotContext>(
 
   // Возвращаем функцию-обработчик для регистрации в сцене
   return async (ctx: T) => {
-    const buttonId = typeof id === "string" ? id : id.toString();
+    const buttonId = typeof id === 'string' ? id : id.toString();
     const userId = ctx.from?.id;
     const username = ctx.from?.username;
 
@@ -220,7 +220,7 @@ export function createButtonHandler<T extends BaseBotContext>(
       const errorId = generateErrorId();
 
       // Получаем информацию о сцене
-      const sceneName = ctx.scene?.current?.id || "unknown_scene";
+      const sceneName = ctx.scene?.current?.id || 'unknown_scene';
 
       // Получаем данные callback query
       const errorCallbackData =
@@ -229,7 +229,7 @@ export function createButtonHandler<T extends BaseBotContext>(
           : undefined;
 
       // Получаем стек вызовов ошибки
-      const errorStack = (error as Error).stack || "No stack trace available";
+      const errorStack = (error as Error).stack || 'No stack trace available';
 
       // Логируем ошибку с расширенной информацией
       logger.error(`Ошибка при обработке кнопки ${buttonId} [${errorId}]`, {
@@ -255,7 +255,7 @@ export function createButtonHandler<T extends BaseBotContext>(
         if (errorOptions.showRetryButton) {
           keyboard.push([
             {
-              text: errorOptions.retryButtonText || "Повторить",
+              text: errorOptions.retryButtonText || 'Повторить',
               callback_data: errorCallbackData || buttonId,
             },
           ]);
@@ -265,7 +265,7 @@ export function createButtonHandler<T extends BaseBotContext>(
         if (errorOptions.showCancelButton) {
           keyboard.push([
             {
-              text: errorOptions.cancelButtonText || "Отмена",
+              text: errorOptions.cancelButtonText || 'Отмена',
               callback_data: `cancel_${buttonId}`,
             },
           ]);
@@ -312,7 +312,7 @@ export function createButtonHandler<T extends BaseBotContext>(
               `Сцена: ${sceneName}\n` +
               `Кнопка: ${buttonId}\n` +
               `Ошибка: ${(error as Error).message}\n\n` +
-              `Стек вызовов:\n\`\`\`\n${errorStack.slice(0, 500)}${errorStack.length > 500 ? "..." : ""}\n\`\`\``;
+              `Стек вызовов:\n\`\`\`\n${errorStack.slice(0, 500)}${errorStack.length > 500 ? '...' : ''}\n\`\`\``;
 
             // Отправляем сообщение администратору через бота
             // Примечание: ctx.telegram.sendMessage доступен через контекст
@@ -320,7 +320,7 @@ export function createButtonHandler<T extends BaseBotContext>(
               errorOptions.adminUserId,
               adminMessage,
               {
-                parse_mode: "Markdown",
+                parse_mode: 'Markdown',
               }
             );
 
@@ -382,7 +382,7 @@ export function registerButton<T extends BaseBotContext>(
   scene.action(options.id, handler);
 
   const buttonId =
-    typeof options.id === "string" ? options.id : options.id.toString();
+    typeof options.id === 'string' ? options.id : options.id.toString();
 
   logger.debug(`Зарегистрирован обработчик для ${buttonId}`, {
     type: LogType.SYSTEM,
@@ -428,7 +428,7 @@ function registerCancelHandler<T extends BaseBotContext>(
         await onCancel(ctx);
       } else {
         // По умолчанию просто отправляем сообщение
-        await ctx.reply("Действие отменено.");
+        await ctx.reply('Действие отменено.');
       }
 
       logger.botAction(`Успешно обработана отмена действия: ${buttonId}`, {
@@ -445,7 +445,7 @@ function registerCancelHandler<T extends BaseBotContext>(
 
       // Отправляем сообщение об ошибке
       await ctx.reply(
-        "Произошла ошибка при отмене действия. Попробуйте еще раз."
+        'Произошла ошибка при отмене действия. Попробуйте еще раз.'
       );
     }
   });
@@ -485,7 +485,7 @@ export function registerButtons<T extends BaseBotContext>(
 
     if (options.errorHandling?.showCancelButton) {
       const buttonId =
-        typeof options.id === "string" ? options.id : options.id.toString();
+        typeof options.id === 'string' ? options.id : options.id.toString();
       registerCancelHandler(scene, buttonId, options.errorHandling?.onCancel);
     }
   }
@@ -507,7 +507,7 @@ export function registerButtons<T extends BaseBotContext>(
  */
 export function createNestedMenu(
   menuOptions: NestedMenuOptions,
-  currentPath: string = ""
+  currentPath: string = ''
 ): {
   keyboard: any[][];
   handlers: ButtonOptions[];
@@ -515,9 +515,9 @@ export function createNestedMenu(
   const {
     items,
     showBackButton = true,
-    backButtonText = "« Назад",
+    backButtonText = '« Назад',
     showHomeButton = true,
-    homeButtonText = "🏠 Главное меню",
+    homeButtonText = '🏠 Главное меню',
     columns = 1,
   } = menuOptions;
 
@@ -558,7 +558,7 @@ export function createNestedMenu(
       if (!item.handler) {
         handlers.push({
           id: itemId,
-          handler: async (ctx) => {
+          handler: async ctx => {
             const submenuOptions: NestedMenuOptions = {
               title: item.text,
               items: item.submenu || [],
@@ -588,7 +588,7 @@ export function createNestedMenu(
             if (showHomeButton) {
               navigationRow.push({
                 text: homeButtonText,
-                callback_data: "home",
+                callback_data: 'home',
               });
             }
 
@@ -639,9 +639,9 @@ export function createNestedMenu(
     // Добавляем обработчик для кнопки "Назад"
     handlers.push({
       id: `back_${currentPath}`,
-      handler: async (ctx) => {
+      handler: async ctx => {
         // Получаем родительский путь
-        const parentPath = currentPath.split("_").slice(0, -1).join("_");
+        const parentPath = currentPath.split('_').slice(0, -1).join('_');
 
         // Если это корневое меню, просто отправляем его
         if (!parentPath) {
@@ -687,14 +687,14 @@ export function createNestedMenu(
   if (showHomeButton) {
     navigationRow.push({
       text: homeButtonText,
-      callback_data: "home",
+      callback_data: 'home',
     });
 
     // Добавляем обработчик для кнопки "Главное меню"
     if (currentPath) {
       handlers.push({
-        id: "home",
-        handler: async (ctx) => {
+        id: 'home',
+        handler: async ctx => {
           // Отправляем корневое меню
           const rootMenuOptions: NestedMenuOptions = {
             title: menuOptions.title,
@@ -736,7 +736,7 @@ function findItemByPath(
   items: NestedMenuItem[],
   path: string
 ): NestedMenuItem | undefined {
-  const pathParts = path.split("_");
+  const pathParts = path.split('_');
 
   if (pathParts.length === 0) {
     return undefined;
@@ -746,7 +746,7 @@ function findItemByPath(
   let currentItem: NestedMenuItem | undefined;
 
   for (const part of pathParts) {
-    currentItem = currentItems.find((item) => item.id === part);
+    currentItem = currentItems.find(item => item.id === part);
 
     if (!currentItem) {
       return undefined;

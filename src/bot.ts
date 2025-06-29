@@ -1,11 +1,12 @@
-import * as dotenv from "dotenv";
-import { Telegraf, session, Scenes, Context, Markup } from "telegraf";
-import { logger, LogLevel, LogType } from "./utils/logger";
-import { StorageAdapter } from "./adapters/storage-adapter";
-import { MemoryAdapter } from "./adapters/memory-adapter";
-import { User } from "./schemas";
-import { errorHandler } from "./middlewares/error-handler";
-import { config } from "./config";
+import * as dotenv from 'dotenv';
+import { Telegraf, session, Scenes, Context } from 'telegraf';
+import { logger, LogLevel, LogType } from './utils/logger';
+import { StorageAdapter } from './adapters/storage-adapter';
+import { MemoryAdapter } from './adapters/memory-adapter';
+import { User } from './schemas';
+import { errorHandler } from './middlewares/error-handler';
+import { config } from './config';
+import { setupCommands } from './commands';
 
 // --- Типы Контекста и Сессии ---
 export interface SessionData
@@ -27,7 +28,7 @@ async function ensureUserMiddleware(
   next: () => Promise<void>
 ) {
   if (!ctx.from?.id) {
-    logger.warn("ensureUserMiddleware: Обновление без ctx.from.id.", {
+    logger.warn('ensureUserMiddleware: Обновление без ctx.from.id.', {
       type: LogType.SYSTEM,
     });
     return;
@@ -35,13 +36,13 @@ async function ensureUserMiddleware(
   const telegramId = ctx.from.id;
 
   if (!ctx.storage) {
-    logger.error("ensureUserMiddleware: ctx.storage не инициализирован.", {
+    logger.error('ensureUserMiddleware: ctx.storage не инициализирован.', {
       type: LogType.SYSTEM,
     });
     if (ctx.reply) {
       await ctx
         .reply(
-          "Произошла внутренняя ошибка (storage not init). Пожалуйста, попробуйте позже."
+          'Произошла внутренняя ошибка (storage not init). Пожалуйста, попробуйте позже.'
         )
         .catch(() => {});
     }
@@ -53,13 +54,13 @@ async function ensureUserMiddleware(
 
     if (!user) {
       logger.info(
-        "ensureUserMiddleware: Пользователь " +
+        'ensureUserMiddleware: Пользователь ' +
           telegramId +
-          " не найден, создаем нового.",
+          ' не найден, создаем нового.',
         { type: LogType.USER_ACTION }
       );
       const username =
-        ctx.from.username || ctx.from.first_name || "User_" + telegramId;
+        ctx.from.username || ctx.from.first_name || 'User_' + telegramId;
       const userData: Partial<User> = {
         telegram_id: telegramId,
         username: username,
@@ -70,35 +71,35 @@ async function ensureUserMiddleware(
 
       if (user) {
         logger.info(
-          "ensureUserMiddleware: Пользователь " +
+          'ensureUserMiddleware: Пользователь ' +
             telegramId +
-            " (" +
+            ' (' +
             user.username +
-            ") успешно создан. ID: " +
+            ') успешно создан. ID: ' +
             user.id,
           { type: LogType.USER_ACTION }
         );
       } else {
         logger.error(
-          "ensureUserMiddleware: createUser для " +
+          'ensureUserMiddleware: createUser для ' +
             telegramId +
-            " вернул null/undefined.",
+            ' вернул null/undefined.',
           { type: LogType.USER_ACTION }
         );
         if (ctx.reply) {
           await ctx
-            .reply("Не удалось создать вашу учетную запись. Попробуйте позже.")
+            .reply('Не удалось создать вашу учетную запись. Попробуйте позже.')
             .catch(() => {});
         }
         return;
       }
     } else {
       logger.debug(
-        "ensureUserMiddleware: Пользователь " +
+        'ensureUserMiddleware: Пользователь ' +
           telegramId +
-          " (" +
-          (user.username || "N/A") +
-          ") найден. ID: " +
+          ' (' +
+          (user.username || 'N/A') +
+          ') найден. ID: ' +
           user.id,
         { type: LogType.USER_ACTION }
       );
@@ -110,7 +111,7 @@ async function ensureUserMiddleware(
     ctx.session.user = user;
   } catch (error) {
     logger.error(
-      "ensureUserMiddleware: Ошибка при работе с пользователем " + telegramId,
+      'ensureUserMiddleware: Ошибка при работе с пользователем ' + telegramId,
       {
         error: error instanceof Error ? error : new Error(String(error)),
         type: LogType.USER_ACTION,
@@ -119,7 +120,7 @@ async function ensureUserMiddleware(
     if (ctx.reply) {
       await ctx
         .reply(
-          "Произошла ошибка при проверке вашей учетной записи. Попробуйте позже."
+          'Произошла ошибка при проверке вашей учетной записи. Попробуйте позже.'
         )
         .catch(() => {});
     }
@@ -137,11 +138,11 @@ async function startBot() {
     logToConsole: true,
     minLevel: LogLevel.DEBUG,
   });
-  logger.info("Запуск бота...", { type: LogType.SYSTEM });
+  logger.info('Запуск бота...', { type: LogType.SYSTEM });
 
   const BOT_TOKEN = process.env.BOT_TOKEN || config.BOT_TOKEN;
   if (!BOT_TOKEN) {
-    logger.fatal("BOT_TOKEN не найден в .env файле или конфигурации.", {
+    logger.fatal('BOT_TOKEN не найден в .env файле или конфигурации.', {
       type: LogType.SYSTEM,
     });
     process.exit(1);
@@ -151,11 +152,11 @@ async function startBot() {
 
   const storage = new MemoryAdapter();
   try {
-    logger.info("Хранилище (MemoryAdapter) готово к использованию.", {
+    logger.info('Хранилище (MemoryAdapter) готово к использованию.', {
       type: LogType.SYSTEM,
     });
   } catch (error) {
-    logger.fatal("Ошибка инициализации хранилища.", {
+    logger.fatal('Ошибка инициализации хранилища.', {
       error: error instanceof Error ? error : new Error(String(error)),
       type: LogType.SYSTEM,
     });
@@ -175,79 +176,64 @@ async function startBot() {
 
   bot.use(ensureUserMiddleware);
 
-  bot.start(async (ctx) => {
-    const userFirstName =
-      ctx.session?.user?.first_name || ctx.from?.first_name || "незнакомец";
-    await ctx.reply(
-      `Привет, ${userFirstName}! Я простой бот-стартер. Используй /help для списка команд.`,
-      Markup.removeKeyboard()
-    );
-  });
-
-  bot.help(async (ctx) => {
-    const helpMessage =
-      "Доступные команды:\n" +
-      "/start - Начальное приветствие\n" +
-      "/help - Это сообщение\n" +
-      "Больше команд может быть добавлено через setupCommands.";
-    await ctx.reply(helpMessage);
-  });
+  // Подключаем команды из commands.ts
+  setupCommands(bot);
 
   bot.catch((err: any, ctx: CustomContext) => {
     errorHandler(err, ctx);
   });
-  logger.info("Telegraf global error handler registered.");
+  logger.info('Telegraf global error handler registered.');
 
-  logger.info("Запуск Telegraf...", { type: LogType.SYSTEM });
+  logger.info('Запуск Telegraf...', { type: LogType.SYSTEM });
 
   try {
-    if (process.env.NODE_ENV === "development") {
-      logger.info("Bot is running in development mode with polling.");
+    if (process.env.NODE_ENV === 'development') {
+      logger.info('Bot is running in development mode with polling.');
       await bot.telegram.deleteWebhook({ drop_pending_updates: true });
       await bot.launch();
       logger.info(`Bot @${bot.botInfo?.username} started! (Telegraf)`);
     } else {
-      logger.info("Bot is running in production mode (webhook setup pending).");
+      logger.info('Bot is running in production mode (webhook setup pending).');
       logger.warn(
-        "Production mode with webhook is not fully implemented for Telegraf. Falling back to polling for now."
+        'Production mode with webhook is not fully implemented for Telegraf. Falling back to polling for now.'
       );
       await bot.telegram.deleteWebhook({ drop_pending_updates: true });
       await bot.launch();
       logger.info(`Bot @${bot.botInfo?.username} started! (Telegraf)`);
     }
   } catch (err) {
-    logger.error("Error starting Telegraf bot", {
+    logger.error('Error starting Telegraf bot', {
       error: err instanceof Error ? err : new Error(String(err)),
       type: LogType.SYSTEM,
     });
     process.exit(1);
   }
 
-  logger.info("Telegraf bot setup complete. Waiting for messages...");
+  logger.info('Telegraf bot setup complete. Waiting for messages...');
 }
 
 startBot().catch((error: unknown) => {
-  logger.fatal("Критическая ошибка при запуске бота", {
+  logger.fatal('Критическая ошибка при запуске бота', {
     error: error instanceof Error ? error : new Error(String(error)),
     type: LogType.SYSTEM,
   });
   process.exit(1);
 });
 
-process.once("SIGINT", () => {
-  logger.info("SIGINT received, shutting down Telegraf bot gracefully...");
+process.once('SIGINT', () => {
+  logger.info('SIGINT received, shutting down Telegraf bot gracefully...');
   if (bot) {
-    bot.stop("SIGINT");
+    bot.stop('SIGINT');
   }
-  logger.info("Telegraf bot stopped.");
+  logger.info('Telegraf bot stopped.');
   process.exit(0);
 });
-process.once("SIGTERM", () => {
-  logger.info("SIGTERM received, shutting down Telegraf bot gracefully...");
+process.once('SIGTERM', () => {
+  logger.info('SIGTERM received, shutting down Telegraf bot gracefully...');
   if (bot) {
-    bot.stop("SIGTERM");
+    bot.stop('SIGTERM');
   }
-  logger.info("Telegraf bot stopped.");
+  logger.info('Telegraf bot stopped.');
   process.exit(0);
 });
 

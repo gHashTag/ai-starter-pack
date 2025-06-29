@@ -8,15 +8,15 @@ import {
   HttpLink,
   ApolloLink,
   from,
-} from "@apollo/client";
-import { onError } from "@apollo/client/link/error";
-import { config } from "../config";
-import { logger, LogType } from "../utils/logger";
-import { gql } from "@apollo/client";
+} from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
+import { config } from '../config';
+import { logger, LogType } from '../utils/logger';
+import { gql } from '@apollo/client';
 
 // Проверяем наличие URL для подключения к GraphQL API
-if (!config.GRAPHQL_ENDPOINT && process.env.NODE_ENV !== "test") {
-  logger.warn("GRAPHQL_ENDPOINT не указан. GraphQL API не будет доступен.", {
+if (!config.GRAPHQL_ENDPOINT && process.env.NODE_ENV !== 'test') {
+  logger.warn('GRAPHQL_ENDPOINT не указан. GraphQL API не будет доступен.', {
     type: LogType.SYSTEM,
   });
 }
@@ -35,7 +35,7 @@ const httpLink = config.GRAPHQL_ENDPOINT
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path }) => {
-      logger.error("GraphQL error", {
+      logger.error('GraphQL error', {
         error: new Error(message),
         type: LogType.ERROR,
         data: {
@@ -47,7 +47,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   }
 
   if (networkError) {
-    logger.error("Network error", {
+    logger.error('Network error', {
       error: networkError,
       type: LogType.ERROR,
     });
@@ -74,15 +74,15 @@ export const apolloClient = httpLink
       cache: new InMemoryCache(),
       defaultOptions: {
         watchQuery: {
-          fetchPolicy: "network-only",
-          errorPolicy: "all",
+          fetchPolicy: 'network-only',
+          errorPolicy: 'all',
         },
         query: {
-          fetchPolicy: "network-only",
-          errorPolicy: "all",
+          fetchPolicy: 'network-only',
+          errorPolicy: 'all',
         },
         mutate: {
-          errorPolicy: "all",
+          errorPolicy: 'all',
         },
       },
     })
@@ -106,18 +106,18 @@ export async function testGraphQLConnection(): Promise<boolean> {
   if (!apolloClient) return false;
 
   try {
-    logger.info("Testing GraphQL connection...", {
+    logger.info('Testing GraphQL connection...', {
       type: LogType.EXTERNAL_SERVICE,
     });
     await apolloClient.query({
       query: GET_TEST_DATA, // Убедимся, что здесь используется gql-тегированный запрос
     });
-    logger.info("GraphQL connection test successful:", {
+    logger.info('GraphQL connection test successful:', {
       type: LogType.SYSTEM,
     });
     return true;
   } catch (error) {
-    logger.error("Ошибка при подключении к GraphQL API", {
+    logger.error('Ошибка при подключении к GraphQL API', {
       error: error instanceof Error ? error : new Error(String(error)),
       type: LogType.ERROR,
     });

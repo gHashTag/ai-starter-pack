@@ -1,0 +1,7 @@
+# 🕉️ Sacred Commit Message Validation
+echo "📝 Validating commit message dharma..."
+
+# Run commitlint to ensure conventional commits
+bunx commitlint --edit $1
+
+echo "✅ Commit message follows the sacred conventions!"

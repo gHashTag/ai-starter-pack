@@ -3,14 +3,14 @@
  * @description Содержит класс для тестирования Telegram-сцен
  */
 
-import { describe, it, beforeEach, afterEach } from "bun:test";
+import { describe, it, beforeEach, afterEach } from 'bun:test';
 import {
   MockedTelegramContext,
   MockedStorageAdapter,
   SceneTestOptions,
-} from "./types";
-import { createMockContext, createMockAdapter, resetAllMocks } from "./mocks";
-import { Scenes } from "telegraf";
+} from './types';
+import { createMockContext, createMockAdapter, resetAllMocks } from './mocks';
+import { Scenes } from 'telegraf';
 
 /**
  * Класс для тестирования Telegram-сцен
@@ -52,7 +52,7 @@ export class SceneTester<C extends Scenes.WizardContext> {
     }
 
     if (!this.sceneConstructor) {
-      throw new Error("Не указан конструктор сцены");
+      throw new Error('Не указан конструктор сцены');
     }
 
     return new this.sceneConstructor(this.mockAdapter, ...this.constructorArgs);
@@ -132,7 +132,7 @@ export class SceneTester<C extends Scenes.WizardContext> {
       });
 
       // Создаем тесты для каждого тестового случая
-      testCases.forEach((testCase) => {
+      testCases.forEach(testCase => {
         it(testCase.name, async () => {
           // Выполняем настройку, если она указана
           if (testCase.setup) {
@@ -160,7 +160,7 @@ export class SceneTester<C extends Scenes.WizardContext> {
   }): void {
     this.createTestSuite([
       {
-        name: "should handle enter correctly",
+        name: 'should handle enter correctly',
         setup: options.setup,
         test: async (
           scene: C,
@@ -193,7 +193,7 @@ export class SceneTester<C extends Scenes.WizardContext> {
   }): void {
     this.createTestSuite([
       {
-        name: "should handle leave correctly",
+        name: 'should handle leave correctly',
         setup: options.setup,
         test: async (
           scene: C,

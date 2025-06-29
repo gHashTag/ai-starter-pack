@@ -28,4 +28,4 @@ export interface TTSService {
    * Очищает кэш
    */
   clearCache(): Promise<void>;
-} 
+}

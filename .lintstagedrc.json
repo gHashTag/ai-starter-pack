@@ -1,0 +1,6 @@
+{
+  "*.{ts,tsx,js,jsx}": ["prettier --write", "git add"],
+  "*.{json,md,yml,yaml}": ["prettier --write", "git add"],
+  "*.ts": ["bash -c 'bun run typecheck'"],
+  "package.json": ["prettier --write", "git add"]
+}

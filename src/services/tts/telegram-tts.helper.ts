@@ -74,4 +74,4 @@ export class TelegramTTSHelper {
       await next();
     };
   }
-} 
+}

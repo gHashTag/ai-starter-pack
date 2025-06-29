@@ -17,17 +17,17 @@
 ### Создание моков
 
 ```typescript
-import { createMockContext, createMockAdapter } from "../framework/telegram";
+import { createMockContext, createMockAdapter } from '../framework/telegram';
 
 // Создание мокированного контекста
 const mockContext = createMockContext({
   userId: 123456789,
-  username: "testuser",
-  messageText: "Test message",
-  callbackQueryData: "test_callback_data",
+  username: 'testuser',
+  messageText: 'Test message',
+  callbackQueryData: 'test_callback_data',
   sessionData: {
     currentProjectId: 1,
-    currentReelId: "reel123",
+    currentReelId: 'reel123',
   },
 });
 
@@ -35,11 +35,11 @@ const mockContext = createMockContext({
 const mockAdapter = createMockAdapter({
   getReelById: jest.fn().mockResolvedValue({
     id: 1,
-    instagram_id: "reel123",
-    url: "https://example.com",
-    caption: "Test Reel",
-    transcript: "This is a test transcript.",
-    transcript_status: "completed",
+    instagram_id: 'reel123',
+    url: 'https://example.com',
+    caption: 'Test Reel',
+    transcript: 'This is a test transcript.',
+    transcript_status: 'completed',
   }),
 });
 ```
@@ -47,22 +47,22 @@ const mockAdapter = createMockAdapter({
 ### Тестирование сцены
 
 ```typescript
-import { SceneTester } from "../framework/telegram";
-import { ChatbotScene } from "../../scenes/chatbot-scene";
+import { SceneTester } from '../framework/telegram';
+import { ChatbotScene } from '../../scenes/chatbot-scene';
 
 // Создание тестера для сцены
 const sceneTester = new SceneTester({
-  sceneName: "ChatbotScene",
-  sceneFilePath: "../../scenes/chatbot-scene.ts",
+  sceneName: 'ChatbotScene',
+  sceneFilePath: '../../scenes/chatbot-scene.ts',
   sceneConstructor: ChatbotScene,
-  constructorArgs: ["test-api-key"],
+  constructorArgs: ['test-api-key'],
 });
 
 // Создание тестового набора
 sceneTester.createTestSuite([
   {
-    name: "should handle enter correctly",
-    setup: (tester) => {
+    name: 'should handle enter correctly',
+    setup: tester => {
       // Настройка контекста и адаптера
       const context = tester.getContext();
       context.scene.session.currentProjectId = 1;
@@ -70,11 +70,11 @@ sceneTester.createTestSuite([
       const adapter = tester.getAdapter();
       adapter.getReelById.mockResolvedValue({
         id: 1,
-        instagram_id: "reel123",
-        url: "https://example.com",
-        caption: "Test Reel",
-        transcript: "This is a test transcript.",
-        transcript_status: "completed",
+        instagram_id: 'reel123',
+        url: 'https://example.com',
+        caption: 'Test Reel',
+        transcript: 'This is a test transcript.',
+        transcript_status: 'completed',
       });
     },
     test: async (scene, context, adapter) => {
@@ -83,7 +83,7 @@ sceneTester.createTestSuite([
 
       // Проверка результатов
       expect(context.reply).toHaveBeenCalledWith(
-        expect.stringContaining("Чат с видео"),
+        expect.stringContaining('Чат с видео'),
         expect.anything()
       );
     },
@@ -94,85 +94,85 @@ sceneTester.createTestSuite([
 ### Тестирование последовательности действий
 
 ```typescript
-import { SequenceTester } from "../framework/telegram";
-import { ChatbotScene } from "../../scenes/chatbot-scene";
-import { expectReplyWithText, expectAnswerCbQuery } from "../framework/telegram";
+import { SequenceTester } from '../framework/telegram';
+import { ChatbotScene } from '../../scenes/chatbot-scene';
+import { expectReplyWithText, expectAnswerCbQuery } from '../framework/telegram';
 
 // Создание тестера для последовательности действий
 const sequenceTester = new SequenceTester({
-  sceneName: "ChatbotScene",
-  sceneFilePath: "../../scenes/chatbot-scene.ts",
+  sceneName: 'ChatbotScene',
+  sceneFilePath: '../../scenes/chatbot-scene.ts',
   sceneConstructor: ChatbotScene,
-  constructorArgs: ["test-api-key"],
+  constructorArgs: ['test-api-key'],
 });
 
 // Тестирование последовательности действий
-sequenceTester.testSequence("Chat with Reel", [
+sequenceTester.testSequence('Chat with Reel', [
   // Шаг 1: Вход в сцену
   {
-    name: "Enter scene",
-    action: async (tester) => {
+    name: 'Enter scene',
+    action: async tester => {
       const scene = tester.createScene() as any;
       const context = tester.getContext();
 
       // Настройка контекста и адаптера
       context.scene.session.currentProjectId = 1;
-      context.scene.session.currentReelId = "reel123";
+      context.scene.session.currentReelId = 'reel123';
 
       const adapter = tester.getAdapter();
       adapter.getReelById.mockResolvedValue({
         id: 1,
-        instagram_id: "reel123",
-        url: "https://example.com",
-        caption: "Test Reel",
-        transcript: "This is a test transcript.",
-        transcript_status: "completed",
+        instagram_id: 'reel123',
+        url: 'https://example.com',
+        caption: 'Test Reel',
+        transcript: 'This is a test transcript.',
+        transcript_status: 'completed',
       });
 
       // Вызов метода enter
       await scene.enter(context);
     },
-    assertions: (tester) => {
+    assertions: tester => {
       const context = tester.getContext();
 
       // Проверка результатов
-      expectReplyWithText(context, "Чат с видео");
+      expectReplyWithText(context, 'Чат с видео');
     },
   },
 
   // Шаг 2: Отправка текстового сообщения
   {
-    name: "Send text message",
-    action: async (tester) => {
+    name: 'Send text message',
+    action: async tester => {
       const scene = tester.createScene() as any;
       const context = tester.getContext();
 
       // Настройка контекста
       context.message = {
         ...context.message,
-        text: "What is this video about?",
+        text: 'What is this video about?',
       };
 
       // Настройка сервиса чат-бота
-      scene.chatbotService.generateResponse = jest.fn().mockResolvedValue(
-        "This video is about Instagram Reels."
-      );
+      scene.chatbotService.generateResponse = jest
+        .fn()
+        .mockResolvedValue('This video is about Instagram Reels.');
 
       // Вызов обработчика текстовых сообщений
       await scene.onText(context);
     },
-    assertions: (tester) => {
+    assertions: tester => {
       const context = tester.getContext();
       const scene = tester.createScene() as any;
 
       // Проверка результатов
-      expect(context.sendChatAction).toHaveBeenCalledWith("typing");
+      expect(context.sendChatAction).toHaveBeenCalledWith('typing');
       expect(scene.chatbotService.generateResponse).toHaveBeenCalledWith(
-        "123456789",
-        "reel123",
-        "What is this video about?"
+        '123456789',
+        'reel123',
+        'What is this video about?'
       );
-      expectReplyWithText(context, "This video is about Instagram Reels.");
+      expectReplyWithText(context, 'This video is about Instagram Reels.');
     },
   },
 ]);
@@ -181,37 +181,37 @@ sequenceTester.testSequence("Chat with Reel", [
 ### Использование генераторов тестов
 
 ```typescript
-import { generateTextHandlerTests, generateCallbackQueryHandlerTests } from "../framework/telegram";
-import { ChatbotScene } from "../../scenes/chatbot-scene";
+import { generateTextHandlerTests, generateCallbackQueryHandlerTests } from '../framework/telegram';
+import { ChatbotScene } from '../../scenes/chatbot-scene';
 
 // Создание экземпляра сцены
 const mockAdapter = createMockAdapter();
-const chatbotScene = new ChatbotScene(mockAdapter, "test-api-key");
+const chatbotScene = new ChatbotScene(mockAdapter, 'test-api-key');
 
 // Генерация тестов для обработчика текстовых сообщений
 generateTextHandlerTests({
-  name: "ChatbotScene",
+  name: 'ChatbotScene',
   scene: chatbotScene,
-  getHandler: (scene) => (scene as any).onText.bind(scene),
+  getHandler: scene => (scene as any).onText.bind(scene),
   cases: [
     {
-      name: "should generate response for text message",
-      text: "What is this video about?",
-      setupContext: (ctx) => {
-        ctx.scene.session.currentReelId = "reel123";
-        (chatbotScene as any).chatbotService.generateResponse = jest.fn().mockResolvedValue(
-          "This video is about Instagram Reels."
-        );
+      name: 'should generate response for text message',
+      text: 'What is this video about?',
+      setupContext: ctx => {
+        ctx.scene.session.currentReelId = 'reel123';
+        (chatbotScene as any).chatbotService.generateResponse = jest
+          .fn()
+          .mockResolvedValue('This video is about Instagram Reels.');
       },
-      assertions: (ctx) => {
-        expect(ctx.sendChatAction).toHaveBeenCalledWith("typing");
+      assertions: ctx => {
+        expect(ctx.sendChatAction).toHaveBeenCalledWith('typing');
         expect((chatbotScene as any).chatbotService.generateResponse).toHaveBeenCalledWith(
-          "123456789",
-          "reel123",
-          "What is this video about?"
+          '123456789',
+          'reel123',
+          'What is this video about?'
         );
         expect(ctx.reply).toHaveBeenCalledWith(
-          "This video is about Instagram Reels.",
+          'This video is about Instagram Reels.',
           expect.anything()
         );
       },

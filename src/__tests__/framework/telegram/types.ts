@@ -3,7 +3,7 @@
  * @description Содержит типы и интерфейсы для создания моков и тестирования Telegram-сцен
  */
 
-import { Mock } from "bun:test";
+import { Mock } from 'bun:test';
 
 /**
  * Тип для мокированного контекста Telegraf

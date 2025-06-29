@@ -5,10 +5,6 @@
     "rootDir": ".",
     "skipLibCheck": true
   },
-  "include": [
-    "*.ts"
-  ],
-  "exclude": [
-    "templates/**/*.ts"
-  ]
+  "include": ["*.ts"],
+  "exclude": ["templates/**/*.ts"]
 }

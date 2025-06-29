@@ -7,30 +7,30 @@
 
 // Уровни логирования
 export enum LogLevel {
-  DEBUG = "debug",
-  INFO = "info",
-  WARN = "warn",
-  ERROR = "error",
-  FATAL = "fatal",
+  DEBUG = 'debug',
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error',
+  FATAL = 'fatal',
 }
 
 // Типы логов
 export enum LogType {
-  SYSTEM = "system",
-  DATABASE = "database",
-  TELEGRAM_API = "telegram_api",
-  GRAPHQL_API = "graphql_api",
-  EXTERNAL_SERVICE = "external_service",
-  BUSINESS_LOGIC = "business_logic",
-  USER_ACTION = "user_action",
-  SCENE = "scene",
-  NETWORK = "network",
-  PERFORMANCE = "performance",
-  TEST = "test",
-  ERROR = "error",
-  WARNING = "warning",
-  INFO = "info",
-  DEBUG = "debug",
+  SYSTEM = 'system',
+  DATABASE = 'database',
+  TELEGRAM_API = 'telegram_api',
+  GRAPHQL_API = 'graphql_api',
+  EXTERNAL_SERVICE = 'external_service',
+  BUSINESS_LOGIC = 'business_logic',
+  USER_ACTION = 'user_action',
+  SCENE = 'scene',
+  NETWORK = 'network',
+  PERFORMANCE = 'performance',
+  TEST = 'test',
+  ERROR = 'error',
+  WARNING = 'warning',
+  INFO = 'info',
+  DEBUG = 'debug',
 }
 
 // Интерфейс для записи лога
@@ -86,7 +86,7 @@ export class Logger {
   }
 
   // Логирование
-  public log(entry: Omit<LogEntry, "timestamp">) {
+  public log(entry: Omit<LogEntry, 'timestamp'>) {
     const fullEntry: LogEntry = {
       ...entry,
       timestamp: new Date(),
@@ -166,7 +166,7 @@ export class Logger {
       entry.level !== LogLevel.ERROR &&
       entry.level !== LogLevel.FATAL
     ) {
-      console.log("Additional data:", entry.data);
+      console.log('Additional data:', entry.data);
     }
   }
 
@@ -186,7 +186,7 @@ export class Logger {
 
   public debug(
     message: string,
-    options?: Omit<LogEntry, "timestamp" | "level" | "message">
+    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
   ) {
     this.log({
       level: LogLevel.DEBUG,
@@ -198,7 +198,7 @@ export class Logger {
 
   public info(
     message: string,
-    options?: Omit<LogEntry, "timestamp" | "level" | "message">
+    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
   ) {
     this.log({
       level: LogLevel.INFO,
@@ -210,7 +210,7 @@ export class Logger {
 
   public warn(
     message: string,
-    options?: Omit<LogEntry, "timestamp" | "level" | "message">
+    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
   ) {
     this.log({
       level: LogLevel.WARN,
@@ -222,7 +222,7 @@ export class Logger {
 
   public error(
     message: string,
-    options?: Omit<LogEntry, "timestamp" | "level" | "message">
+    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
   ) {
     this.log({
       level: LogLevel.ERROR,
@@ -234,7 +234,7 @@ export class Logger {
 
   public fatal(
     message: string,
-    options?: Omit<LogEntry, "timestamp" | "level" | "message">
+    options?: Omit<LogEntry, 'timestamp' | 'level' | 'message'>
   ) {
     this.log({
       level: LogLevel.FATAL,
@@ -247,7 +247,7 @@ export class Logger {
   // Логирование действий пользователя
   public userAction(
     message: string,
-    options?: Omit<LogEntry, "timestamp" | "level" | "type" | "message">
+    options?: Omit<LogEntry, 'timestamp' | 'level' | 'type' | 'message'>
   ) {
     this.log({
       level: LogLevel.INFO,
@@ -260,7 +260,7 @@ export class Logger {
   // Логирование действий бота
   public botAction(
     message: string,
-    options?: Omit<LogEntry, "timestamp" | "level" | "type" | "message">
+    options?: Omit<LogEntry, 'timestamp' | 'level' | 'type' | 'message'>
   ) {
     this.log({
       level: LogLevel.INFO,

@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "google-calendar": {
+      "command": "bunx",
+      "args": ["@cocal/google-calendar-mcp"],
+      "env": {
+        "GOOGLE_OAUTH_CREDENTIALS": "/Users/euro/.config/google-calendar-mcp/credentials.json"
+      }
+    },
+    "composio": {
+      "command": "bunx",
+      "args": ["@composio/mcp@latest"],
+      "env": {
+        "COMPOSIO_API_KEY": "your-composio-api-key-here"
+      }
+    }
+  }
+}

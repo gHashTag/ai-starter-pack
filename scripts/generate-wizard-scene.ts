@@ -13,9 +13,9 @@
  * Создаст файл src/scenes/my-feature-wizard-scene.ts на основе шаблона
  */
 
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Получаем текущую директорию
 const __filename = fileURLToPath(import.meta.url);
@@ -24,8 +24,8 @@ const __dirname = path.dirname(__filename);
 // Функция для преобразования строки в PascalCase
 function toPascalCase(str: string): string {
   return (str.match(/[a-zA-Z0-9]+/g) || [])
-    .map((x) => `${x.charAt(0).toUpperCase()}${x.slice(1)}`)
-    .join("");
+    .map(x => `${x.charAt(0).toUpperCase()}${x.slice(1)}`)
+    .join('');
 }
 
 // Функция для преобразования строки в camelCase
@@ -36,7 +36,7 @@ function toPascalCase(str: string): string {
 
 // Функция для преобразования строки в snake_case
 function toSnakeCase(str: string): string {
-  return str.replace(/-/g, "_");
+  return str.replace(/-/g, '_');
 }
 
 // Функция для преобразования строки в UPPER_SNAKE_CASE
@@ -48,9 +48,9 @@ function toUpperSnakeCase(str: string): string {
 async function generateWizardScene(sceneName: string): Promise<void> {
   // Проверяем, что имя сцены задано
   if (!sceneName) {
-    console.error("Ошибка: Не указано имя сцены");
+    console.error('Ошибка: Не указано имя сцены');
     console.log(
-      "Использование: bun run scripts/generate-wizard-scene.ts <имя-сцены>"
+      'Использование: bun run scripts/generate-wizard-scene.ts <имя-сцены>'
     );
     process.exit(1);
   }
@@ -64,16 +64,16 @@ async function generateWizardScene(sceneName: string): Promise<void> {
   // Пути к файлам
   const templatePath = path.join(
     __dirname,
-    "..",
-    "src",
-    "templates",
-    "wizard-scene-template.ts"
+    '..',
+    'src',
+    'templates',
+    'wizard-scene-template.ts'
   );
   const outputPath = path.join(
     __dirname,
-    "..",
-    "src",
-    "scenes",
+    '..',
+    'src',
+    'scenes',
     `${sceneName}-wizard-scene.ts`
   );
 
@@ -90,7 +90,7 @@ async function generateWizardScene(sceneName: string): Promise<void> {
   }
 
   // Читаем шаблон
-  let templateContent = fs.readFileSync(templatePath, "utf-8");
+  let templateContent = fs.readFileSync(templatePath, 'utf-8');
 
   // Заменяем все вхождения шаблонных имен на реальные
   templateContent = templateContent
@@ -110,10 +110,10 @@ async function generateWizardScene(sceneName: string): Promise<void> {
   console.log(`✅ Wizard-сцена успешно создана: ${outputPath}`);
 
   // Проверяем, нужно ли добавить новые шаги в ScraperSceneStep
-  const typesPath = path.join(__dirname, "..", "src", "types.ts");
+  const typesPath = path.join(__dirname, '..', 'src', 'types.ts');
 
   if (fs.existsSync(typesPath)) {
-    let typesContent = fs.readFileSync(typesPath, "utf-8");
+    let typesContent = fs.readFileSync(typesPath, 'utf-8');
 
     // Проверяем, есть ли уже шаги для этой сцены
     if (!typesContent.includes(`${upperSnakeCaseName}_STEP_1`)) {
@@ -124,7 +124,7 @@ async function generateWizardScene(sceneName: string): Promise<void> {
 
       if (enumMatch) {
         const enumContent = enumMatch[0];
-        const lastLine = enumContent.split("\n").slice(-2)[0];
+        const lastLine = enumContent.split('\n').slice(-2)[0];
 
         // Создаем новые строки для шагов
         const newSteps = `  ${upperSnakeCaseName}_STEP_1 = "${upperSnakeCaseName}_STEP_1", // Шаг 1 для ${sceneName}
@@ -145,8 +145,8 @@ async function generateWizardScene(sceneName: string): Promise<void> {
     }
   }
 
-  console.log("\n🎉 Генерация завершена!");
-  console.log("\nДля использования сцены:");
+  console.log('\n🎉 Генерация завершена!');
+  console.log('\nДля использования сцены:');
   console.log(`1. Импортируйте сцену в index.ts:`);
   console.log(
     `   import { ${pascalCaseName}WizardScene, setup${pascalCaseName}Wizard } from "./src/scenes/${sceneName}-wizard-scene";`

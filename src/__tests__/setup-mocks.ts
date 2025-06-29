@@ -1,4 +1,4 @@
-import { mock, jest } from "bun:test";
+import { mock, jest } from 'bun:test';
 
 // Этот экземпляр будет использоваться и в тестах для проверки вызовов
 export const mockNeonAdapterInstance = {
@@ -31,7 +31,7 @@ export const mockNeonAdapterConstructor = jest.fn(
 
 // Используем АБСОЛЮТНЫЙ путь к мокируемому модулю
 mock.module(
-  "/Users/playra/instagram-scraper-bot/src/adapters/neon-adapter.ts",
+  '/Users/playra/instagram-scraper-bot/src/adapters/neon-adapter.ts',
   () => ({
     NeonAdapter: mockNeonAdapterConstructor,
   })
@@ -39,5 +39,5 @@ mock.module(
 
 // Для отладки, чтобы видеть, что этот файл выполняется
 console.log(
-  "bun:test --- PRELOAD setup-mocks.ts EXECUTED (using ABSOLUTE path) ---"
+  'bun:test --- PRELOAD setup-mocks.ts EXECUTED (using ABSOLUTE path) ---'
 );
