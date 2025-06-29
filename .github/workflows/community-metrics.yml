@@ -1,0 +1,260 @@
+name: 📊 Community Metrics Tracking
+
+on:
+  schedule:
+    # Run weekly on Sunday at 12:00 UTC (медитативный воскресный анализ)
+    - cron: '0 12 * * 0'
+  workflow_dispatch:
+    inputs:
+      generate_report:
+        description: 'Generate detailed community report'
+        required: false
+        default: 'true'
+        type: boolean
+
+jobs:
+  collect-github-metrics:
+    name: 📈 GitHub Community Metrics
+    runs-on: ubuntu-latest
+    if: github.repository_owner == 'playra'
+
+    steps:
+      - name: 🕉️ Sacred Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for comprehensive analysis
+
+      - name: 📊 Collect Repository Metrics
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+
+            // 📊 Basic Repository Stats
+            const repo = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            // 👥 Contributors Analysis
+            const contributors = await github.rest.repos.listContributors({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            // 🌟 Stars over time (last 30 days)
+            const starredAt = await github.rest.activity.listStargazersForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              headers: {
+                'Accept': 'application/vnd.github.v3.star+json'
+              },
+              per_page: 100
+            });
+
+            // 🐛 Issues Analysis
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 100
+            });
+
+            // 🔀 Pull Requests Analysis  
+            const prs = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 100
+            });
+
+            // 📦 Releases Analysis
+            const releases = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 50
+            });
+
+            const metrics = {
+              repository: {
+                name: repo.data.full_name,
+                stars: repo.data.stargazers_count,
+                forks: repo.data.forks_count,
+                watchers: repo.data.subscribers_count,
+                size: repo.data.size,
+                language: repo.data.language,
+                created_at: repo.data.created_at,
+                updated_at: repo.data.updated_at
+              },
+              community: {
+                contributors_count: contributors.data.length,
+                top_contributors: contributors.data.slice(0, 5).map(c => ({
+                  login: c.login,
+                  contributions: c.contributions
+                }))
+              },
+              engagement: {
+                issues: {
+                  total: issues.data.length,
+                  open: issues.data.filter(i => i.state === 'open' && !i.pull_request).length,
+                  closed: issues.data.filter(i => i.state === 'closed' && !i.pull_request).length
+                },
+                pull_requests: {
+                  total: prs.data.length,
+                  open: prs.data.filter(pr => pr.state === 'open').length,
+                  merged: prs.data.filter(pr => pr.merged_at).length,
+                  closed: prs.data.filter(pr => pr.state === 'closed' && !pr.merged_at).length
+                },
+                releases: {
+                  total: releases.data.length,
+                  latest: releases.data[0]?.tag_name || 'No releases'
+                }
+              },
+              activity: {
+                recent_stars: starredAt.data.slice(-30).length,
+                stars_this_week: starredAt.data.filter(star => 
+                  new Date(star.starred_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+                ).length
+              }
+            };
+
+            // Save metrics to file
+            fs.writeFileSync('community-metrics.json', JSON.stringify(metrics, null, 2));
+
+            // Generate summary for GitHub Step Summary
+            const summary = `## 🕉️ Sacred Community Metrics Report
+
+            ### 📊 Repository Health
+            - **⭐ Stars**: ${metrics.repository.stars}
+            - **🍴 Forks**: ${metrics.repository.forks}
+            - **👀 Watchers**: ${metrics.repository.watchers}
+            - **👥 Contributors**: ${metrics.community.contributors_count}
+
+            ### 📈 Engagement Insights
+            - **🐛 Issues**: ${metrics.engagement.issues.open} open / ${metrics.engagement.issues.total} total
+            - **🔀 Pull Requests**: ${metrics.engagement.pull_requests.open} open / ${metrics.engagement.pull_requests.total} total
+            - **📦 Releases**: ${metrics.engagement.releases.total} total (Latest: ${metrics.engagement.releases.latest})
+
+            ### ⚡ Recent Activity
+            - **🌟 Stars This Week**: ${metrics.activity.stars_this_week}
+            - **🌟 Stars Last 30 Days**: ${metrics.activity.recent_stars}
+
+            ### 🏆 Top Contributors
+            ${metrics.community.top_contributors.map(c => `- **${c.login}**: ${c.contributions} contributions`).join('\n')}
+
+            ---
+
+            *"सर्वे भवन्तु सुखिनः सर्वे सन्तु निरामयाः"* - *"Да будут все счастливы, да будут все здоровы"*`;
+
+            fs.writeFileSync('$GITHUB_STEP_SUMMARY', summary);
+
+      - name: 📊 Generate Metrics Badge Data
+        run: |
+          # Generate shields.io compatible metrics
+          STARS=$(cat community-metrics.json | jq '.repository.stars')
+          FORKS=$(cat community-metrics.json | jq '.repository.forks')
+          CONTRIBUTORS=$(cat community-metrics.json | jq '.community.contributors_count')
+
+          echo "STARS_COUNT=$STARS" >> $GITHUB_ENV
+          echo "FORKS_COUNT=$FORKS" >> $GITHUB_ENV
+          echo "CONTRIBUTORS_COUNT=$CONTRIBUTORS" >> $GITHUB_ENV
+
+      - name: 💾 Store Historical Metrics
+        run: |
+          # Create metrics history directory if it doesn't exist
+          mkdir -p .github/metrics-history
+
+          # Store timestamped metrics
+          TIMESTAMP=$(date +"%Y-%m-%d")
+          cp community-metrics.json .github/metrics-history/metrics-$TIMESTAMP.json
+
+          # Keep only last 12 weeks of data (3 months)
+          find .github/metrics-history -name "metrics-*.json" -mtime +84 -delete || true
+
+      - name: 📈 Generate Trend Analysis
+        run: |
+          echo "## 📈 Meditative Trend Analysis" >> trend-report.md
+          echo "" >> trend-report.md
+
+          # Compare with previous week's metrics if available
+          LAST_WEEK=$(date -d '7 days ago' +"%Y-%m-%d" 2>/dev/null || date -v-7d +"%Y-%m-%d" 2>/dev/null || echo "")
+
+          if [ -f ".github/metrics-history/metrics-$LAST_WEEK.json" ]; then
+            CURRENT_STARS=$(cat community-metrics.json | jq '.repository.stars')
+            PREVIOUS_STARS=$(cat .github/metrics-history/metrics-$LAST_WEEK.json | jq '.repository.stars' 2>/dev/null || echo "0")
+            STARS_DIFF=$((CURRENT_STARS - PREVIOUS_STARS))
+            
+            echo "### 🌟 Weekly Growth" >> trend-report.md
+            echo "- **Stars Change**: $STARS_DIFF (from $PREVIOUS_STARS to $CURRENT_STARS)" >> trend-report.md
+            echo "" >> trend-report.md
+          fi
+
+          echo "*\"चैतन्यं शाश्वतं शान्तं\"* - *\"Сознание вечно и умиротворено\"* 🧘‍♂️" >> trend-report.md
+
+      - name: 🔄 Commit Metrics Updates
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .github/metrics-history/
+          git commit -m "📊 chore: update community metrics history" || exit 0
+          git push || exit 0
+
+  notify-community-health:
+    name: 🌱 Community Health Check
+    runs-on: ubuntu-latest
+    needs: collect-github-metrics
+    if: always() && github.repository_owner == 'playra'
+
+    steps:
+      - name: 🕉️ Sacred Checkout
+        uses: actions/checkout@v4
+
+      - name: 🌱 Check Community Health Score
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const healthCheck = await github.rest.repos.getCommunityProfileMetrics({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            const health = healthCheck.data;
+            const score = health.health_percentage;
+
+            const healthReport = `## 🌱 Community Health Meditation
+
+            ### 🏥 Sacred Health Score: ${score}%
+
+            #### ✅ Present Elements:
+            ${health.files.readme ? '- 📖 README.md' : ''}
+            ${health.files.contributing ? '- 🤝 CONTRIBUTING.md' : ''}
+            ${health.files.code_of_conduct ? '- 📜 CODE_OF_CONDUCT.md' : ''}
+            ${health.files.license ? '- ⚖️ LICENSE' : ''}
+            ${health.files.issue_template ? '- 🐛 Issue Templates' : ''}
+            ${health.files.pull_request_template ? '- 🔀 PR Template' : ''}
+
+            #### 🔍 Missing Elements:
+            ${!health.files.readme ? '- ❌ README.md' : ''}
+            ${!health.files.contributing ? '- ❌ CONTRIBUTING.md' : ''}
+            ${!health.files.code_of_conduct ? '- ❌ CODE_OF_CONDUCT.md' : ''}
+            ${!health.files.license ? '- ❌ LICENSE' : ''}
+            ${!health.files.issue_template ? '- ❌ Issue Templates' : ''}
+            ${!health.files.pull_request_template ? '- ❌ PR Template' : ''}
+
+            ---
+
+            *"धर्मो रक्षति रक्षितः"* - *"Дхарма защищает тех, кто защищает её"* 🛡️`;
+
+            // Create an issue if health score is below 80%
+            if (score < 80) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🌱 Community Health Score Below 80%',
+                body: healthReport + '\n\n**Action Required**: Please address missing community health elements to improve project accessibility and contribution guidelines.',
+                labels: ['community', 'documentation', 'enhancement']
+              });
+            }
+
+            console.log(healthReport);

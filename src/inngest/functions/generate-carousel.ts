@@ -11,7 +11,7 @@ import { CarouselContentGeneratorService } from '../../services/carousel-content
 import { InstagramCanvasService } from '../../services/instagram-canvas.service';
 import { logger, LogType } from '../../utils/logger';
 import { InputMediaPhoto } from 'telegraf/types';
-import { promises as fs } from 'fs';
+import { promises as fs, createReadStream } from 'fs';
 // import path from "path"; // не используется
 
 const contentGenerator = new CarouselContentGeneratorService();
@@ -161,7 +161,7 @@ export const generateCarousel = inngest.createFunction(
       const mediaGroup: InputMediaPhoto[] = imagePaths.map(
         (imagePath, index) => ({
           type: 'photo',
-          media: { source: imagePath }, // Используем файловый дескриптор
+          media: { source: createReadStream(imagePath) }, // Правильный способ для Telegram API
           caption:
             index === 0
               ? `🎨 **Карусель на тему:** "${topic}"\n\n` +

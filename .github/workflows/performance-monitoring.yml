@@ -1,0 +1,196 @@
+name: 🏃‍♀️ Performance Monitoring
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 6 AM UTC (медитативное время)
+    - cron: '0 6 * * *'
+
+jobs:
+  lighthouse-audit:
+    name: 🔍 Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    if: github.event_name != 'schedule' || github.repository_owner == 'playra'
+
+    steps:
+      - name: 🕉️ Sacred Checkout
+        uses: actions/checkout@v4
+
+      - name: 🧘‍♂️ Setup Meditative Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: 📦 Install Sacred Dependencies
+        run: |
+          npm install -g @lhci/cli@0.12.x
+          bun install
+
+      - name: 🏗️ Build for Enlightenment
+        run: bun run build
+        continue-on-error: true
+
+      - name: 🔍 Run Lighthouse CI
+        run: lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+
+  bundle-analysis:
+    name: 📦 Bundle Size Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🕉️ Sacred Checkout
+        uses: actions/checkout@v4
+
+      - name: 🧘‍♂️ Setup Meditative Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Sacred Dependencies
+        run: bun install
+
+      - name: 📊 Analyze Bundle Size
+        run: |
+          echo "## 📦 Bundle Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "### 🧘‍♂️ Meditative Bundle Insights" >> $GITHUB_STEP_SUMMARY
+
+          # Analyze TypeScript build output
+          if [ -f "dist/index.js" ]; then
+            size=$(du -h dist/index.js | cut -f1)
+            echo "- **Main Bundle**: $size" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Analyze node_modules size
+          node_modules_size=$(du -sh node_modules 2>/dev/null | cut -f1 || echo "N/A")
+          echo "- **Dependencies Size**: $node_modules_size" >> $GITHUB_STEP_SUMMARY
+
+          # Count dependencies
+          deps_count=$(bun pm ls | wc -l || echo "N/A")
+          echo "- **Dependencies Count**: $deps_count packages" >> $GITHUB_STEP_SUMMARY
+
+  dependency-audit:
+    name: 🔐 Security & Dependency Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🕉️ Sacred Checkout
+        uses: actions/checkout@v4
+
+      - name: 🧘‍♂️ Setup Meditative Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Sacred Dependencies
+        run: bun install
+
+      - name: 🔐 Security Audit
+        run: |
+          echo "## 🔐 Security Meditation Report" >> $GITHUB_STEP_SUMMARY
+          echo "### 🛡️ Sacred Protection Status" >> $GITHUB_STEP_SUMMARY
+
+          # Run bun audit if available
+          if bun audit --help >/dev/null 2>&1; then
+            bun audit --json > audit-results.json || true
+            if [ -f "audit-results.json" ]; then
+              vulnerabilities=$(cat audit-results.json | jq '.vulnerabilities | length' 2>/dev/null || echo "0")
+              echo "- **Vulnerabilities Found**: $vulnerabilities" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "- **Audit Status**: Bun audit not available, using npm audit" >> $GITHUB_STEP_SUMMARY
+            npm audit --json > audit-results.json || true
+            if [ -f "audit-results.json" ]; then
+              vulnerabilities=$(cat audit-results.json | jq '.vulnerabilities | length' 2>/dev/null || echo "0")
+              echo "- **Vulnerabilities Found**: $vulnerabilities" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+  performance-benchmarks:
+    name: ⚡ Performance Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🕉️ Sacred Checkout
+        uses: actions/checkout@v4
+
+      - name: 🧘‍♂️ Setup Meditative Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Sacred Dependencies
+        run: bun install
+
+      - name: ⚡ Run Performance Tests
+        run: |
+          echo "## ⚡ Performance Meditation Results" >> $GITHUB_STEP_SUMMARY
+          echo "### 🏃‍♀️ Sacred Speed Insights" >> $GITHUB_STEP_SUMMARY
+
+          # Test TypeScript compilation speed
+          start_time=$(date +%s%N)
+          bun run typecheck
+          end_time=$(date +%s%N)
+          compile_time=$(( (end_time - start_time) / 1000000 ))
+          echo "- **TypeScript Compilation**: ${compile_time}ms" >> $GITHUB_STEP_SUMMARY
+
+          # Test build speed
+          start_time=$(date +%s%N)
+          bun run build >/dev/null 2>&1 || true
+          end_time=$(date +%s%N)
+          build_time=$(( (end_time - start_time) / 1000000 ))
+          echo "- **Build Time**: ${build_time}ms" >> $GITHUB_STEP_SUMMARY
+
+          # Test test suite speed
+          start_time=$(date +%s%N)
+          bun test --silent >/dev/null 2>&1 || true
+          end_time=$(date +%s%N)
+          test_time=$(( (end_time - start_time) / 1000000 ))
+          echo "- **Test Suite**: ${test_time}ms" >> $GITHUB_STEP_SUMMARY
+
+  notify-performance:
+    name: 📢 Performance Notifications
+    runs-on: ubuntu-latest
+    needs:
+      [
+        lighthouse-audit,
+        bundle-analysis,
+        dependency-audit,
+        performance-benchmarks,
+      ]
+    if: always() && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: 📊 Generate Performance Report
+        run: |
+          echo "🕉️ **Daily Performance Meditation Complete**" >> performance-report.md
+          echo "" >> performance-report.md
+          echo "*\"तत्त्वमसि\"* - *\"Ты есть То\"* - Упанишады" >> performance-report.md
+          echo "" >> performance-report.md
+          echo "### 📊 Sacred Metrics Summary" >> performance-report.md
+          echo "- **Lighthouse Audit**: ${{ needs.lighthouse-audit.result }}" >> performance-report.md
+          echo "- **Bundle Analysis**: ${{ needs.bundle-analysis.result }}" >> performance-report.md
+          echo "- **Security Audit**: ${{ needs.dependency-audit.result }}" >> performance-report.md
+          echo "- **Performance Benchmarks**: ${{ needs.performance-benchmarks.result }}" >> performance-report.md
+          echo "" >> performance-report.md
+          echo "*Да пребудет с нами скорость света и безопасность Брахмы* 🙏" >> performance-report.md
+
+      - name: 💬 Comment on Latest Commit (if scheduled)
+        if: github.event_name == 'schedule'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('performance-report.md', 'utf8');
+
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: report
+            });
