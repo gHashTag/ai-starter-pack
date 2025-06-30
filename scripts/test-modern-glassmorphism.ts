@@ -8,7 +8,7 @@ import {
   InstagramCanvasService,
   ColorTemplate,
 } from '../src/services/instagram-canvas.service.js';
-import { CarouselSlide } from '../src/types/carousel.types.js';
+import { CarouselSlide } from '../src/types.js';
 
 async function testPhotoRealisticGlassmorphism() {
   console.log('🔥 Тестируем ФОТОРЕАЛИСТИЧНЫЙ Glassmorphism эффект...');
