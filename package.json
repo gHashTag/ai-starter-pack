@@ -93,7 +93,7 @@
     "@napi-rs/canvas": "^0.1.72",
     "ai": "^5.0.0-beta.3",
     "canvas": "^3.1.2",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.0.0",
     "drizzle-orm": "^0.29.5",
     "inngest": "^3.39.2",
     "node-cache": "^5.1.2",
