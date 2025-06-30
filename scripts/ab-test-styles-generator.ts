@@ -382,6 +382,7 @@ async function generateABTestVariants() {
   // Тестовый слайд
   const testSlide: CarouselSlide = {
     order: 1,
+    type: 'title',
     title: '💎 A/B Тест стилей',
     content:
       'Библия VibeCoding\\nМедитативное программирование\\nв красивых карточках',

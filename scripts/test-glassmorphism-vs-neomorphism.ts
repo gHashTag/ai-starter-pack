@@ -12,6 +12,7 @@ async function testGlassmorphismVsNeomorphism() {
   // Создаем тестовый слайд
   const testSlide: CarouselSlide = {
     order: 1,
+    type: 'title',
     title: '💎 Сравнение стилей',
     content: 'Фотореализм стекла\\nпротив медитативного\\nsoft UI дизайна',
     subtitle: '#glassmorphism #neomorphism #design',
