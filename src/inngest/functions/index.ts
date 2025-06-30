@@ -8,16 +8,32 @@
 import { helloWorld } from './hello-world';
 import { generateCarousel } from './generate-carousel';
 import { vibeCodingBroadcast } from './vibecoding-broadcast';
+import {
+  vibeCodingResearch,
+  vibeCodingQuickAnswer,
+} from './vibecoding-research';
 
 /**
  * Массив всех Inngest функций для регистрации
  */
-export const functions = [helloWorld, generateCarousel, vibeCodingBroadcast];
+export const functions = [
+  helloWorld,
+  generateCarousel,
+  vibeCodingBroadcast,
+  vibeCodingResearch,
+  vibeCodingQuickAnswer,
+];
 
 /**
  * Экспорт отдельных функций для прямого импорта
  */
-export { helloWorld, generateCarousel, vibeCodingBroadcast };
+export {
+  helloWorld,
+  generateCarousel,
+  vibeCodingBroadcast,
+  vibeCodingResearch,
+  vibeCodingQuickAnswer,
+};
 
 /**
  * Экспорт событий и типов

@@ -225,13 +225,16 @@ async function startBot() {
   logger.info('Telegraf bot setup complete. Waiting for messages...');
 }
 
-startBot().catch((error: unknown) => {
-  logger.fatal('Критическая ошибка при запуске бота', {
-    error: error instanceof Error ? error : new Error(String(error)),
-    type: LogType.SYSTEM,
+// Запускаем бота, только если файл выполняется напрямую
+if (import.meta.main) {
+  startBot().catch((error: unknown) => {
+    logger.fatal('Критическая ошибка при запуске бота', {
+      error: error instanceof Error ? error : new Error(String(error)),
+      type: LogType.SYSTEM,
+    });
+    process.exit(1);
   });
-  process.exit(1);
-});
+}
 
 process.once('SIGINT', () => {
   logger.info('SIGINT received, shutting down Telegraf bot gracefully...');

@@ -91,7 +91,18 @@ export interface CarouselSlide {
   /** Порядковый номер слайда */
   order: number;
   /** Тип слайда */
-  type: 'title' | 'principle' | 'practice' | 'quote' | 'summary';
+  type:
+    | 'title'
+    | 'principle'
+    | 'practice'
+    | 'quote'
+    | 'summary'
+    | 'introduction'
+    | 'tools'
+    | 'psychology'
+    | 'metrics'
+    | 'trends'
+    | 'conclusion';
   /** Заголовок слайда */
   title: string;
   /** Основной текст */

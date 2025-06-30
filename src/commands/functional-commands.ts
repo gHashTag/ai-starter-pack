@@ -14,9 +14,7 @@ declare global {
   var carouselTopics:
     | Record<string, { topic: string; messageId: number }>
     | undefined;
-  var carouselState:
-    | Record<string, { currentIndex: number }>
-    | undefined;
+  var carouselState: Record<string, { currentIndex: number }> | undefined;
 }
 
 // 📋 Pure Types
@@ -87,14 +85,17 @@ export const buildHelpMessage = (environment: BotEnvironment): string => {
     '🚀 `/start` - Начальное приветствие\n' +
     '❓ `/help` - Это сообщение с помощью\n' +
     '🎨 `/carousel [тема]` - Создать Instagram карусель\n' +
+    '🔍 `/research [тема]` - Глубокое исследование с AI агентом\n' +
+    '💡 `/ask [вопрос]` - Быстрый ответ на вопрос\n' +
     '🧘‍♂️ `/wisdom` - Получить мудрость дня\n' +
     '⚡ `/quick` - Быстрый старт проекта\n\n' +
-    '**Примеры использования карусели:**\n' +
+    '**Примеры использования:**\n' +
     '`/carousel медитативное программирование`\n' +
-    '`/carousel состояние потока`\n' +
-    '`/carousel AI инструменты 2025`\n' +
+    '`/research AI инструменты 2025`\n' +
+    '`/ask что такое состояние потока?`\n' +
     '`/carousel принципы VIBECODING`\n\n' +
-    '💡 *Бот анализирует документацию VIBECODING и создает красивые слайды для Instagram!*\n\n' +
+    '🤖 *Research Agent ищет в интернете, анализирует данные и создает структурированные отчеты!*\n' +
+    '🎨 *Carousel генерирует красивые слайды для Instagram из знаний VibeCoding!*\n\n' +
     `_${environment.indicator} | ${environment.details}_`
   );
 };
@@ -250,38 +251,41 @@ export const handleCarousel: CommandHandler = async ctx => {
   // 🎨 Инициализируем состояние карусели и сразу показываем галерею
   const templates = InstagramCanvasService.getColorTemplates();
   const templateKeys = Object.keys(templates);
-  
+
   // Инициализируем состояние карусели
   if (!global.carouselState) {
     global.carouselState = {};
   }
   global.carouselState[topicKey] = { currentIndex: 0 };
-  
+
   // Берем первый темплейт для отображения
   const currentTemplateKey = templateKeys[0];
   const selectedTemplate = templates[currentTemplateKey as ColorTemplate];
-  
+
   // 🔧 Локальная версия: отправляем текстовое сообщение вместо фото
-  
+
   // 🔧 Локальная версия: отправляем текстовое сообщение вместо фото
   await ctx.reply(
     `🎨 **Галерея темплейтов для карусели**\n\n` +
-    `📝 **Тема:** "${topic}"\n\n` +
-    `${selectedTemplate.emoji} **${selectedTemplate.name}**\n` +
-    `🎨 **Цвета:** ${selectedTemplate.background}\n\n` +
-    `💡 Листайте влево-вправо для выбора. Чтобы применить, нажмите "Применить"!\n\n` +
-    `🎯 Позиция: 1 из ${templateKeys.length}`,
+      `📝 **Тема:** "${topic}"\n\n` +
+      `${selectedTemplate.emoji} **${selectedTemplate.name}**\n` +
+      `🎨 **Цвета:** ${selectedTemplate.background}\n\n` +
+      `💡 Листайте влево-вправо для выбора. Чтобы применить, нажмите "Применить"!\n\n` +
+      `🎯 Позиция: 1 из ${templateKeys.length}`,
     {
       parse_mode: 'Markdown',
       reply_markup: {
         inline_keyboard: [
           [
             { text: '⬅️ Назад', callback_data: `nav:prev:${topicKey}` },
-            { text: 'Вперед ➡️', callback_data: `nav:next:${topicKey}` }
+            { text: 'Вперед ➡️', callback_data: `nav:next:${topicKey}` },
           ],
           [
-            { text: '✔️ Применить', callback_data: `select:${currentTemplateKey}:${topicKey}` }
-          ]
+            {
+              text: '✔️ Применить',
+              callback_data: `select:${currentTemplateKey}:${topicKey}`,
+            },
+          ],
         ],
       },
     }
@@ -303,7 +307,7 @@ export const handleColorSelection = async (ctx: any) => {
     if (!global.carouselState) {
       global.carouselState = {};
     }
-    
+
     const state = global.carouselState[topicKey] || { currentIndex: 0 };
     state.currentIndex =
       direction === 'next'
@@ -322,22 +326,25 @@ export const handleColorSelection = async (ctx: any) => {
     // 🔧 Локальная версия: обновляем текстовое сообщение вместо фото
     await ctx.editMessageText(
       `🎨 **Галерея темплейтов для карусели**\n\n` +
-      `📝 **Тема:** "${topic}"\n\n` +
-      `${selectedTemplate.emoji} **${selectedTemplate.name}**\n` +
-      `🎨 **Цвета:** ${selectedTemplate.background}\n\n` +
-      `💡 Листайте влево-вправо для выбора. Чтобы применить, нажмите "Применить"!\n\n` +
-      `🎯 Позиция: ${state.currentIndex + 1} из ${templateKeys.length}`,
+        `📝 **Тема:** "${topic}"\n\n` +
+        `${selectedTemplate.emoji} **${selectedTemplate.name}**\n` +
+        `🎨 **Цвета:** ${selectedTemplate.background}\n\n` +
+        `💡 Листайте влево-вправо для выбора. Чтобы применить, нажмите "Применить"!\n\n` +
+        `🎯 Позиция: ${state.currentIndex + 1} из ${templateKeys.length}`,
       {
         parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [
             [
               { text: '⬅️ Назад', callback_data: `nav:prev:${topicKey}` },
-              { text: 'Вперед ➡️', callback_data: `nav:next:${topicKey}` }
+              { text: 'Вперед ➡️', callback_data: `nav:next:${topicKey}` },
             ],
             [
-              { text: '✔️ Применить', callback_data: `select:${currentTemplateKey}:${topicKey}` }
-            ]
+              {
+                text: '✔️ Применить',
+                callback_data: `select:${currentTemplateKey}:${topicKey}`,
+              },
+            ],
           ],
         },
       }
@@ -347,21 +354,21 @@ export const handleColorSelection = async (ctx: any) => {
 
   if (callbackData.startsWith('select:')) {
     const [, colorKey, topicKey] = callbackData.split(':');
-    
+
     // Получаем тему из памяти
     const topicData = global.carouselTopics?.[topicKey];
     if (!topicData) {
       await ctx.answerCbQuery('❌ Сессия истекла, попробуйте еще раз');
       return;
     }
-    
+
     const { topic, messageId } = topicData;
     const colorTemplate = colorKey as ColorTemplate;
     const telegramUserId = ctx.from?.id;
-    
+
     const templates = InstagramCanvasService.getColorTemplates();
     const selectedTemplate = templates[colorTemplate];
-    
+
     try {
       // 🔧 Локальная версия: обновляем текстовое сообщение при выборе
       await ctx.editMessageText(
@@ -371,7 +378,7 @@ export const handleColorSelection = async (ctx: any) => {
           `⏳ Пожалуйста, подождите... Создаю для вас красивые слайды!`,
         { parse_mode: 'Markdown', reply_markup: undefined }
       );
-      
+
       // Отправляем событие в Inngest с выбранным цветом
       logger.info('Попытка отправки события в Inngest с цветовым темплейтом', {
         type: LogType.BUSINESS_LOGIC,
@@ -386,7 +393,7 @@ export const handleColorSelection = async (ctx: any) => {
               : 'production',
         },
       });
-      
+
       await inngest.send({
         name: 'app/carousel.generate.request',
         data: {
@@ -396,7 +403,7 @@ export const handleColorSelection = async (ctx: any) => {
           colorTemplate, // 🎨 Добавляем выбранный цветовой темплейт
         },
       });
-      
+
       logger.info(
         '✅ Событие на генерацию карусели с цветовым темплейтом УСПЕШНО отправлено в Inngest',
         {
@@ -404,10 +411,10 @@ export const handleColorSelection = async (ctx: any) => {
           data: { topic, telegramUserId, colorTemplate },
         }
       );
-      
+
       // Подтверждаем callback
       await ctx.answerCbQuery(`🎨 Выбран стиль: ${selectedTemplate.name}`);
-      
+
       // Очищаем данные из памяти
       if (global.carouselTopics) {
         delete global.carouselTopics[topicKey];
@@ -424,14 +431,14 @@ export const handleColorSelection = async (ctx: any) => {
           data: { topic, telegramUserId, colorTemplate },
         }
       );
-      
+
       await ctx.editMessageText(
         '❌ **Ошибка!** Не удалось запустить генерацию карусели. Попробуйте еще раз.',
         { parse_mode: 'Markdown', reply_markup: undefined }
       );
-      
+
       await ctx.answerCbQuery('❌ Произошла ошибка');
-      
+
       // Очищаем данные из памяти даже при ошибке
       if (global.carouselTopics) {
         delete global.carouselTopics[topicKey];
@@ -537,6 +544,142 @@ export const handleColorSelection = async (ctx: any) => {
   }
 };
 
+// 🔍 Research Command Handler
+export const handleResearch: CommandHandler = async ctx => {
+  const telegramUserId = ctx.from?.id;
+  if (!telegramUserId) {
+    await ctx.reply('❌ Не удалось получить ID пользователя');
+    return;
+  }
+
+  const messageText = (ctx as any)?.message?.text || '';
+  const topic = messageText.replace('/research', '').trim();
+
+  if (!topic) {
+    await ctx.reply(
+      '🕉️ *VibeCoding Research Agent*\n\n' +
+        'Глубокое исследование тем VibeCoding с веб-поиском и AI-анализом\n\n' +
+        'Используй команду с темой:\n' +
+        '`/research <тема>`\n\n' +
+        'Примеры:\n' +
+        '• `/research медитативное программирование`\n' +
+        '• `/research AI инструменты 2025`\n' +
+        '• `/research состояние потока в разработке`\n' +
+        '• `/research cursor ai лучшие практики`\n\n' +
+        '*Agent выполнит веб-поиск, проанализирует данные и даст структурированный ответ*',
+      { parse_mode: 'Markdown' }
+    );
+    return;
+  }
+
+  logger.info('/research command received', {
+    type: LogType.USER_ACTION,
+    data: { text: messageText },
+  });
+
+  try {
+    await inngest.send({
+      name: 'app/research.request',
+      data: {
+        topic,
+        telegramUserId,
+        depth: 'detailed',
+      },
+    });
+
+    logger.info('✅ Событие на исследование УСПЕШНО отправлено в Inngest', {
+      type: LogType.USER_ACTION,
+      data: { topic, telegramUserId },
+    });
+
+    await ctx.reply(
+      `🤖 *VibeCoding Research Agent активирован*\n\n` +
+        `📊 Исследую тему: "${topic}"\n\n` +
+        '🔍 Выполняю веб-поиск актуальной информации...\n' +
+        '🧠 Анализирую данные через призму VibeCoding...\n' +
+        '📝 Готовлю структурированный отчет...\n\n' +
+        '⏳ *Результат придет через 30-60 секунд*',
+      { parse_mode: 'Markdown' }
+    );
+  } catch (error) {
+    logger.error('❌ Ошибка при отправке события исследования в Inngest', {
+      type: LogType.ERROR,
+      error: error instanceof Error ? error : new Error(String(error)),
+    });
+
+    await ctx.reply(
+      '❌ Произошла ошибка при запуске исследования.\n' +
+        'Попробуйте еще раз или обратитесь к администратору.'
+    );
+  }
+};
+
+// 💡 Ask Command Handler
+export const handleAsk: CommandHandler = async ctx => {
+  const telegramUserId = ctx.from?.id;
+  if (!telegramUserId) {
+    await ctx.reply('❌ Не удалось получить ID пользователя');
+    return;
+  }
+
+  const messageText = (ctx as any)?.message?.text || '';
+  const question = messageText.replace('/ask', '').trim();
+
+  if (!question) {
+    await ctx.reply(
+      '🕉️ *VibeCoding Wisdom*\n\n' +
+        'Быстрые ответы на вопросы о VibeCoding\n\n' +
+        'Используй команду с вопросом:\n' +
+        '`/ask <вопрос>`\n\n' +
+        'Примеры:\n' +
+        '• `/ask как начать медитативное программирование?`\n' +
+        '• `/ask что такое состояние потока?`\n' +
+        '• `/ask как настроить Cursor AI?`\n' +
+        '• `/ask преимущества осознанного кодинга`\n\n' +
+        '*Для глубокого анализа используй* `/research <тема>`',
+      { parse_mode: 'Markdown' }
+    );
+    return;
+  }
+
+  logger.info('/ask command received', {
+    type: LogType.USER_ACTION,
+    data: { text: messageText },
+  });
+
+  try {
+    await inngest.send({
+      name: 'app/question.ask',
+      data: {
+        question,
+        telegramUserId,
+      },
+    });
+
+    logger.info('✅ Событие на вопрос УСПЕШНО отправлено в Inngest', {
+      type: LogType.USER_ACTION,
+      data: { question, telegramUserId },
+    });
+
+    await ctx.reply(
+      `🤔 *Размышляю над вопросом...*\n\n` +
+        `"${question}"\n\n` +
+        '⏳ *Ответ придет через несколько секунд*',
+      { parse_mode: 'Markdown' }
+    );
+  } catch (error) {
+    logger.error('❌ Ошибка при отправке события вопроса в Inngest', {
+      type: LogType.ERROR,
+      error: error instanceof Error ? error : new Error(String(error)),
+    });
+
+    await ctx.reply(
+      '❌ Произошла ошибка при обработке вопроса.\n' +
+        'Попробуйте еще раз или используйте `/research` для детального анализа.'
+    );
+  }
+};
+
 // 📝 Pure Text Handler
 export const handleText: CommandHandler = async ctx => {
   logger.info('Text message received', {
@@ -559,6 +702,8 @@ export const COMMAND_HANDLERS = {
   wisdom: handleWisdom,
   quick: handleQuickStart,
   carousel: handleCarousel,
+  research: handleResearch,
+  ask: handleAsk,
   colorSelection: handleColorSelection,
   text: handleText,
 } as const;
@@ -570,6 +715,8 @@ export const setupFunctionalCommands = (bot: any): void => {
   bot.command('wisdom', COMMAND_HANDLERS.wisdom);
   bot.command('quick', COMMAND_HANDLERS.quick);
   bot.command('carousel', COMMAND_HANDLERS.carousel);
+  bot.command('research', COMMAND_HANDLERS.research);
+  bot.command('ask', COMMAND_HANDLERS.ask);
 
   // 🎨 Регистрируем обработчик callback-запросов для выбора цвета
   bot.on('callback_query', COMMAND_HANDLERS.colorSelection);
@@ -578,7 +725,7 @@ export const setupFunctionalCommands = (bot: any): void => {
 
   const environment = detectEnvironment();
   logger.info(
-    `✅ Functional commands registered: start, help, wisdom, quick, carousel, colorSelection, text | ${environment.platform}`,
+    `✅ Functional commands registered: start, help, wisdom, quick, carousel, research, ask, colorSelection, text | ${environment.platform}`,
     {
       type: LogType.SYSTEM,
       data: { environment },

@@ -137,9 +137,12 @@ describe('🕉️ Functional Storage - Pure Functions', () => {
       expect(users[1].telegram_id).toBe(222);
     });
 
-    it('should update user', () => {
+    it('should update user', async () => {
       const userData = createTestUser();
       const [storage, user] = addUser(createEmptyStorage(), userData);
+
+      // Добавляем минимальную задержку чтобы updated_at точно изменился
+      await new Promise(resolve => setTimeout(resolve, 1));
 
       const updatedStorage = updateUser(storage, user.id, {
         username: 'updated_user',
@@ -154,6 +157,10 @@ describe('🕉️ Functional Storage - Pure Functions', () => {
       expect(updatedUser?.first_name).toBe('Updated');
       expect(updatedUser?.last_name).toBe('User'); // unchanged
       expect(updatedUser?.updated_at).not.toEqual(user.updated_at);
+      // Дополнительно проверяем что время действительно больше
+      expect(new Date(updatedUser?.updated_at || '').getTime()).toBeGreaterThan(
+        new Date(user.updated_at).getTime()
+      );
     });
 
     it('should return null when updating non-existent user', () => {
@@ -269,25 +276,41 @@ describe('🕉️ Functional Storage - Pure Functions', () => {
 
       const [storage1] = addUser(
         storage,
-        createTestUser(111, { username: 'john_doe', first_name: 'John' })
+        createTestUser(111, {
+          username: 'john_doe',
+          first_name: 'John',
+          last_name: 'Smith',
+        })
       );
       const [storage2] = addUser(
         storage1,
-        createTestUser(222, { username: 'jane_smith', first_name: 'Jane' })
+        createTestUser(222, {
+          username: 'jane_smith',
+          first_name: 'Jane',
+          last_name: 'Doe',
+        })
       );
       const [storage3] = addUser(
         storage2,
-        createTestUser(333, { username: 'bob_jones', first_name: 'Bob' })
+        createTestUser(333, {
+          username: 'bob_jones',
+          first_name: 'Bob',
+          last_name: 'Johnson',
+        })
       );
 
       const johnUsers = FunctionalStorage.getUsersByUsername(storage3, 'john');
       const jUsers = FunctionalStorage.getUsersByUsername(storage3, 'j');
       const noUsers = FunctionalStorage.getUsersByUsername(storage3, 'xyz');
 
-      expect(johnUsers).toHaveLength(1);
-      expect(johnUsers[0].username).toBe('john_doe');
+      // Поиск "john" найдет:
+      // 1. john_doe (username содержит "john")
+      // 2. bob_jones (last_name "Johnson" содержит "john")
+      expect(johnUsers).toHaveLength(2);
+      expect(johnUsers.some(u => u.username === 'john_doe')).toBe(true);
+      expect(johnUsers.some(u => u.last_name === 'Johnson')).toBe(true);
 
-      expect(jUsers).toHaveLength(2); // john and jane
+      expect(jUsers).toHaveLength(3); // john, jane и bob_jones (все содержат "j")
       expect(noUsers).toHaveLength(0);
     });
   });

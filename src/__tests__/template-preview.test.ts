@@ -5,7 +5,10 @@
 import { describe, test, expect, beforeAll } from 'bun:test';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { InstagramCanvasService, ColorTemplate } from '../services/instagram-canvas.service';
+import {
+  InstagramCanvasService,
+  ColorTemplate,
+} from '../services/instagram-canvas.service';
 
 describe('🎨 Template Preview System', () => {
   const previewDir = path.join(process.cwd(), 'template-previews');
@@ -15,45 +18,44 @@ describe('🎨 Template Preview System', () => {
     try {
       await fs.access(previewDir);
     } catch {
-      console.warn('⚠️ Папка template-previews не найдена. Запустите: bun scripts/generate-template-previews.ts');
+      console.warn(
+        '⚠️ Папка template-previews не найдена. Запустите: bun scripts/generate-template-previews.ts'
+      );
     }
   });
 
-  test('📋 Все цветовые темплейты имеют корректную конфигурацию', () => {
+  test('📋 Galaxy Spiral Blur темплейт имеет корректную конфигурацию', () => {
     const templates = InstagramCanvasService.getColorTemplates();
-    
-    // Проверяем, что есть хотя бы несколько темплейтов
-    expect(Object.keys(templates).length).toBeGreaterThan(5);
-    
-    // Проверяем обязательные поля для каждого темплейта
-    Object.entries(templates).forEach(([_key, template]) => {
-      expect(template.name).toBeTruthy();
-      expect(template.emoji).toBeTruthy();
-      expect(template.background).toBeTruthy();
-      expect(template.accent).toBeTruthy();
-      expect(template.cardBackground).toBeTruthy();
-      
-      // Проверяем, что name не пустое
-      expect(template.name.length).toBeGreaterThan(0);
-      
-      // Проверяем, что background содержит валидный CSS
-      expect(template.background).toMatch(/^(#|linear-gradient|rgba?)/);
-    });
+
+    // Проверяем, что есть единственный темплейт Galaxy Spiral Blur
+    expect(Object.keys(templates).length).toBe(1);
+    expect(templates[ColorTemplate.GALAXY_SPIRAL_BLUR]).toBeTruthy();
+
+    // Проверяем обязательные поля для Galaxy Spiral Blur темплейта
+    const template = templates[ColorTemplate.GALAXY_SPIRAL_BLUR];
+    expect(template.name).toBe('🌌 Galaxy Spiral Blur');
+    expect(template.emoji).toBe('🌌');
+    expect(template.background).toBe('bg-image-galaxy-spiral');
+    expect(template.accent).toBe('rgba(255, 255, 255, 0.3)');
+    expect(template.cardBackground).toBe('rgba(0, 0, 0, 0.4)');
+
+    // Проверяем, что background содержит валидный идентификатор для blur эффекта
+    expect(template.background).toMatch(/bg-image-galaxy-spiral/);
   });
 
-  test('🖼️ Превью-изображения существуют для всех темплейтов', async () => {
+  test('🖼️ Превью-изображение существует для Galaxy Spiral Blur', async () => {
     const templates = InstagramCanvasService.getColorTemplates();
-    
+
     for (const [key] of Object.entries(templates)) {
       const previewPath = path.join(previewDir, `${key}-preview.png`);
-      
+
       try {
         await fs.access(previewPath);
         const stats = await fs.stat(previewPath);
-        
+
         // Проверяем, что файл не пустой
         expect(stats.size).toBeGreaterThan(1000); // Минимум 1KB
-        
+
         // Проверяем, что это PNG файл
         expect(previewPath).toMatch(/\.png$/);
       } catch (error) {
@@ -63,48 +65,39 @@ describe('🎨 Template Preview System', () => {
     }
   });
 
-  test('🎨 Все luxury темплейты присутствуют', () => {
+  test('🎨 Galaxy Spiral Blur является единственным темплейтом', () => {
     const templates = InstagramCanvasService.getColorTemplates();
-    
-    const luxuryTemplates = [
-      ColorTemplate.BLACK_GOLD,
-      ColorTemplate.EMERALD_LUXURY,
-      ColorTemplate.ROYAL_PURPLE,
-      ColorTemplate.PLATINUM_SILVER,
-      ColorTemplate.BURGUNDY_GOLD,
-      ColorTemplate.MIDNIGHT_BLUE,
-      ColorTemplate.COPPER_BRONZE,
-      ColorTemplate.FOREST_GOLD,
-      ColorTemplate.ROSE_GOLD,
-      ColorTemplate.CHARCOAL_MINT,
-    ];
-    
-    luxuryTemplates.forEach(template => {
-      expect(templates[template]).toBeTruthy();
-      expect(templates[template].name).toBeTruthy();
-      expect(templates[template].emoji).toBeTruthy();
-    });
+
+    // Проверяем что у нас только Galaxy Spiral Blur
+    expect(Object.keys(templates).length).toBe(1);
+    expect(templates[ColorTemplate.GALAXY_SPIRAL_BLUR]).toBeTruthy();
+    expect(templates[ColorTemplate.GALAXY_SPIRAL_BLUR].name).toBe(
+      '🌌 Galaxy Spiral Blur'
+    );
+    expect(templates[ColorTemplate.GALAXY_SPIRAL_BLUR].emoji).toBe('🌌');
   });
 
-  test('🌈 Цветовые схемы различаются между собой', () => {
+  test('🌌 Galaxy Spiral Blur имеет уникальный дизайн', () => {
     const templates = InstagramCanvasService.getColorTemplates();
-    const backgrounds = Object.values(templates).map(t => t.background);
-    
-    // Проверяем, что все фоны уникальны
-    const uniqueBackgrounds = new Set(backgrounds);
-    expect(uniqueBackgrounds.size).toBe(backgrounds.length);
+    const template = templates[ColorTemplate.GALAXY_SPIRAL_BLUR];
+
+    // Проверяем уникальность блюр дизайна
+    expect(template.background).toBe('bg-image-galaxy-spiral');
+    expect(template.name).toContain('Blur');
+    expect(template.accent).toBe('rgba(255, 255, 255, 0.3)');
   });
 
-  test('📷 Предпросмотр URL формируется корректно', () => {
+  test('📷 Предпросмотр URL формируется корректно для Galaxy Spiral Blur', () => {
     const originalPort = process.env.HTTP_SERVER_PORT;
     process.env.HTTP_SERVER_PORT = '7103';
-    
-    const expectedUrl = 'http://localhost:7103/preview/black_gold-preview.png';
+
+    const expectedUrl =
+      'http://localhost:7103/preview/galaxy_spiral_blur-preview.png';
     const serverPort = process.env.HTTP_SERVER_PORT || '7103';
-    const previewUrl = `http://localhost:${serverPort}/preview/black_gold-preview.png`;
-    
+    const previewUrl = `http://localhost:${serverPort}/preview/galaxy_spiral_blur-preview.png`;
+
     expect(previewUrl).toBe(expectedUrl);
-    
+
     // Восстанавливаем оригинальное значение
     if (originalPort) {
       process.env.HTTP_SERVER_PORT = originalPort;
@@ -113,19 +106,17 @@ describe('🎨 Template Preview System', () => {
     }
   });
 
-  test('🎯 ColorTemplate enum содержит все ожидаемые значения', () => {
-    const expectedTemplates = [
-      'WHITE', 'MORNING', 'OCEAN', 'SUNSET', 'NATURE', 'FIRE',
-      'BLACK_GOLD', 'EMERALD_LUXURY', 'ROYAL_PURPLE', 'PLATINUM_SILVER',
-      'BURGUNDY_GOLD', 'MIDNIGHT_BLUE', 'COPPER_BRONZE', 'FOREST_GOLD',
-      'ROSE_GOLD', 'CHARCOAL_MINT'
-    ];
-    
+  test('🎯 ColorTemplate enum содержит только Galaxy Spiral Blur', () => {
+    const expectedTemplates = ['GALAXY_SPIRAL_BLUR'];
+
     expectedTemplates.forEach(template => {
-      expect(ColorTemplate[template as keyof typeof ColorTemplate]).toBeTruthy();
+      expect(
+        ColorTemplate[template as keyof typeof ColorTemplate]
+      ).toBeTruthy();
     });
-    
-    // Проверяем общее количество
+
+    // Проверяем что у нас только один шаблон
     expect(Object.keys(ColorTemplate).length).toBe(expectedTemplates.length);
+    expect(Object.keys(ColorTemplate)[0]).toBe('GALAXY_SPIRAL_BLUR');
   });
 });

@@ -1,0 +1,18 @@
+{
+  "timestamp": "2025-06-30T16:04:25.875Z",
+  "style": "Galaxy Spiral Blur",
+  "proportions": {
+    "centralElement": "800×800px (квадрат)",
+    "footer": "750px (чуть меньше центрального)",
+    "spacing": "80px между элементами"
+  },
+  "slides": 4,
+  "generationTime": "2896ms",
+  "output": "./test-outputs/galaxy-proportions",
+  "files": [
+    "galaxy_proportions_slide_1.png",
+    "galaxy_proportions_slide_2.png",
+    "galaxy_proportions_slide_3.png",
+    "galaxy_proportions_slide_4.png"
+  ]
+}

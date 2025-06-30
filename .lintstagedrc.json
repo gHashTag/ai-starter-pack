@@ -1,6 +1,6 @@
 {
-  "*.{ts,tsx,js,jsx}": ["prettier --write", "git add"],
-  "*.{json,md,yml,yaml}": ["prettier --write", "git add"],
-  "*.ts": ["bash -c 'bun run typecheck'"],
-  "package.json": ["prettier --write", "git add"]
+  "*.{ts,tsx,js,jsx}": ["pnpm exec prettier --write", "pnpm exec eslint --fix"],
+  "*.{json,md,yml,yaml}": "pnpm exec prettier --write",
+  "src/**/*.ts": "bash -c 'bun run typecheck'",
+  "package.json": "pnpm sort-package-json"
 }

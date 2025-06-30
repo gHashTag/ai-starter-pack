@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { VibeCodingContent, CarouselSlide } from '../types';
+import { VibeCodingContent, CarouselSlide, Llm } from '../types';
 import { logger, LogType } from '../utils/logger';
 
 /**
@@ -322,7 +322,10 @@ export class VibeCodingContentService {
    * 🔥 Генерирует МАКСИМАЛЬНО ПОЛЕЗНЫЙ текст для Instagram поста
    * с веб-поиском актуальной информации, до 2200 символов
    */
-  public async generateInstagramPost(topic: string, slides: CarouselSlide[]): Promise<string> {
+  public async generateInstagramPost(
+    topic: string,
+    slides: CarouselSlide[]
+  ): Promise<string> {
     const hook = this.generateHook(topic);
     const expandedContent = this.generateExpandedContent(slides);
     const webResearchContent = await this.generateWebResearchContent(topic);
@@ -351,25 +354,21 @@ ${hashtags}
 #vibecoding #кодинг #программирование #разработка #технологии #IT #productivity #mindset #саморазвитие #мотивация`;
 
     // Обрезаем до 2200 символов если нужно (лимит Instagram)
-    return fullPost.length > 2200 ? this.truncateToLimit(fullPost, 2200) : fullPost;
+    return fullPost.length > 2200
+      ? this.truncateToLimit(fullPost, 2200)
+      : fullPost;
   }
 
   /**
    * 📜 Генерирует детальное описание и анализ слайдов
    */
   private generateExpandedContent(slides: CarouselSlide[]): string {
-    return slides
-      .map(slide => `🔹 **${slide.title}**\n${slide.content}`)
-      .join('\n\n')
-      + '\n\nПодробнее про каждый слайд. Цель: дать максимальную ясность и подсказки.';
-  }
-
-  /**
-   * 📚 Генерирует расширенную информацию по теме
-   */
-  private generateAdditionalInfo(topic: string): string {
-    return `🧠 Глубокий разбор темы: ${topic}. Изучаем аспекты, которые меняют подход к разработке и позволяют достичь новых высот.\n\n` +
-           `📈 Применение в реальном мире, примеры и лучшие практики для увеличения продуктивности и качества жизни.`;
+    return (
+      slides
+        .map(slide => `🔹 **${slide.title}**\n${slide.content}`)
+        .join('\n\n') +
+      '\n\nПодробнее про каждый слайд. Цель: дать максимальную ясность и подсказки.'
+    );
   }
 
   /**
@@ -492,7 +491,10 @@ ${keyPoints}
   /**
    * 💡 Генерирует практические советы
    */
-  private generatePracticalTips(topic: string, slides: CarouselSlide[]): string {
+  private generatePracticalTips(
+    topic: string,
+    slides: CarouselSlide[]
+  ): string {
     const tips = [
       '📋 Начинай с малого и постепенно усложняй',
       '⏰ Выделяй время на изучение каждый день',
@@ -522,9 +524,28 @@ ${keyPoints}
 
     const truncated = text.substring(0, limit - 50); // Оставляем место для окончания
     const lastNewline = truncated.lastIndexOf('\n\n');
-    
-    return lastNewline > 0 
-      ? truncated.substring(0, lastNewline) + '\n\n... (продолжение в комментариях) 👇'
+
+    return lastNewline > 0
+      ? truncated.substring(0, lastNewline) +
+          '\n\n... (продолжение в комментариях) 👇'
       : truncated + '...';
+  }
+
+  private async generateTitles(
+    topic: string,
+    existingContent: VibeCodingContent[],
+    llm: Llm
+  ): Promise<string[]> {
+    const existingTitles = existingContent.map(item => item.title).join(', ');
+    const prompt = `Based on the topic "${topic}" and existing titles [${existingTitles}], generate 5 new, unique, and engaging titles for YouTube shorts or TikTok videos. The titles should be short, catchy, and relevant to the topic. Return only a JSON array of strings.`;
+    return [];
+  }
+
+  private async generateSlides(
+    title: string,
+    llm: Llm
+  ): Promise<CarouselSlide[]> {
+    // ... (rest of the implementation for generating slides)
+    return [];
   }
 }

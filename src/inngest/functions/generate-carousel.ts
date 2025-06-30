@@ -77,7 +77,7 @@ export const generateCarousel = inngest.createFunction(
       topic,
       telegramUserId,
       messageId,
-      colorTemplate = ColorTemplate.MORNING,
+      colorTemplate = ColorTemplate.GALAXY_SPIRAL_BLUR,
     } = event.data as GenerateCarouselPayload;
 
     // 🎨 Получаем информацию о выбранном темплейте
