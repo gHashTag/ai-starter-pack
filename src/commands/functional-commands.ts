@@ -9,6 +9,16 @@ import {
   ColorTemplate,
 } from '../services/instagram-canvas.service';
 
+// 🎨 Типы для временного хранения данных карусели
+declare global {
+  var carouselTopics:
+    | Record<string, { topic: string; messageId: number }>
+    | undefined;
+  var carouselState:
+    | Record<string, { currentIndex: number }>
+    | undefined;
+}
+
 // 📋 Pure Types
 export type CommandContext = Context & {
   storage?: any; // Will be injected by middleware
@@ -231,39 +241,224 @@ export const handleCarousel: CommandHandler = async ctx => {
     return;
   }
 
-  // 🎨 Показываем выбор цветовых темплейтов
-  const templates = InstagramCanvasService.getColorTemplates();
-  const keyboard = Object.entries(templates).map(([key, template]) => [
-    {
-      text: `${template.emoji} ${template.name}`,
-      callback_data: `carousel_color:${key}:${Buffer.from(topic).toString('base64')}:${telegramUserId}:${messageId}`,
-    },
-  ]);
+  // 🎨 Сохраняем тему в памяти для использования в callback
+  const topicKey = `topic_${telegramUserId}_${Date.now()}`;
+  // Используем простое хранение в памяти (можно заменить на Redis)
+  global.carouselTopics = global.carouselTopics || {};
+  global.carouselTopics[topicKey] = { topic, messageId };
 
+  // 🎨 Инициализируем состояние карусели и сразу показываем галерею
+  const templates = InstagramCanvasService.getColorTemplates();
+  const templateKeys = Object.keys(templates);
+  
+  // Инициализируем состояние карусели
+  if (!global.carouselState) {
+    global.carouselState = {};
+  }
+  global.carouselState[topicKey] = { currentIndex: 0 };
+  
+  // Берем первый темплейт для отображения
+  const currentTemplateKey = templateKeys[0];
+  const selectedTemplate = templates[currentTemplateKey as ColorTemplate];
+  
+  // 🔧 Локальная версия: отправляем текстовое сообщение вместо фото
+  
+  // 🔧 Локальная версия: отправляем текстовое сообщение вместо фото
   await ctx.reply(
-    `🎨 **Выберите цветовую тему для карусели:**\n\n` +
-      `📝 **Тема:** "${topic}"\n\n` +
-      `Каждая тема создает уникальную атмосферу для ваших слайдов!`,
+    `🎨 **Галерея темплейтов для карусели**\n\n` +
+    `📝 **Тема:** "${topic}"\n\n` +
+    `${selectedTemplate.emoji} **${selectedTemplate.name}**\n` +
+    `🎨 **Цвета:** ${selectedTemplate.background}\n\n` +
+    `💡 Листайте влево-вправо для выбора. Чтобы применить, нажмите "Применить"!\n\n` +
+    `🎯 Позиция: 1 из ${templateKeys.length}`,
     {
       parse_mode: 'Markdown',
       reply_markup: {
-        inline_keyboard: keyboard,
+        inline_keyboard: [
+          [
+            { text: '⬅️ Назад', callback_data: `nav:prev:${topicKey}` },
+            { text: 'Вперед ➡️', callback_data: `nav:next:${topicKey}` }
+          ],
+          [
+            { text: '✔️ Применить', callback_data: `select:${currentTemplateKey}:${topicKey}` }
+          ]
+        ],
       },
     }
   );
 };
 
-// 🎨 Обработчик выбора цветового темплейта
+// 🎨 Обработчик выбора предпросмотра или цветового темплейта
 export const handleColorSelection = async (ctx: any) => {
   const callbackData = ctx.callbackQuery?.data;
-  if (!callbackData || !callbackData.startsWith('carousel_color:')) {
+  if (!callbackData) {
     return;
   }
 
-  const [, colorKey, topicBase64, telegramUserId, messageId] =
-    callbackData.split(':');
-  const topic = Buffer.from(topicBase64, 'base64').toString('utf-8');
+  if (callbackData.startsWith('nav:')) {
+    const [, direction, topicKey] = callbackData.split(':');
+    const templates = InstagramCanvasService.getColorTemplates();
+    const templateKeys = Object.keys(templates);
+
+    if (!global.carouselState) {
+      global.carouselState = {};
+    }
+    
+    const state = global.carouselState[topicKey] || { currentIndex: 0 };
+    state.currentIndex =
+      direction === 'next'
+        ? (state.currentIndex + 1) % templateKeys.length
+        : (state.currentIndex - 1 + templateKeys.length) % templateKeys.length;
+
+    global.carouselState[topicKey] = state;
+
+    const currentTemplateKey = templateKeys[state.currentIndex];
+    const selectedTemplate = templates[currentTemplateKey as ColorTemplate];
+
+    // Получаем тему из памяти
+    const topicData = global.carouselTopics?.[topicKey];
+    const topic = topicData?.topic || 'Неизвестная тема';
+
+    // 🔧 Локальная версия: обновляем текстовое сообщение вместо фото
+    await ctx.editMessageText(
+      `🎨 **Галерея темплейтов для карусели**\n\n` +
+      `📝 **Тема:** "${topic}"\n\n` +
+      `${selectedTemplate.emoji} **${selectedTemplate.name}**\n` +
+      `🎨 **Цвета:** ${selectedTemplate.background}\n\n` +
+      `💡 Листайте влево-вправо для выбора. Чтобы применить, нажмите "Применить"!\n\n` +
+      `🎯 Позиция: ${state.currentIndex + 1} из ${templateKeys.length}`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '⬅️ Назад', callback_data: `nav:prev:${topicKey}` },
+              { text: 'Вперед ➡️', callback_data: `nav:next:${topicKey}` }
+            ],
+            [
+              { text: '✔️ Применить', callback_data: `select:${currentTemplateKey}:${topicKey}` }
+            ]
+          ],
+        },
+      }
+    );
+    return;
+  }
+
+  if (callbackData.startsWith('select:')) {
+    const [, colorKey, topicKey] = callbackData.split(':');
+    
+    // Получаем тему из памяти
+    const topicData = global.carouselTopics?.[topicKey];
+    if (!topicData) {
+      await ctx.answerCbQuery('❌ Сессия истекла, попробуйте еще раз');
+      return;
+    }
+    
+    const { topic, messageId } = topicData;
+    const colorTemplate = colorKey as ColorTemplate;
+    const telegramUserId = ctx.from?.id;
+    
+    const templates = InstagramCanvasService.getColorTemplates();
+    const selectedTemplate = templates[colorTemplate];
+    
+    try {
+      // 🔧 Локальная версия: обновляем текстовое сообщение при выборе
+      await ctx.editMessageText(
+        `🎨 **Генерирую карусель в стиле "${selectedTemplate.name}"**\n\n` +
+          `📝 **Тема:** "${topic}"\n` +
+          `🎨 **Стиль:** ${selectedTemplate.emoji} ${selectedTemplate.name}\n\n` +
+          `⏳ Пожалуйста, подождите... Создаю для вас красивые слайды!`,
+        { parse_mode: 'Markdown', reply_markup: undefined }
+      );
+      
+      // Отправляем событие в Inngest с выбранным цветом
+      logger.info('Попытка отправки события в Inngest с цветовым темплейтом', {
+        type: LogType.BUSINESS_LOGIC,
+        data: {
+          topic,
+          telegramUserId,
+          colorTemplate,
+          eventName: 'app/carousel.generate.request',
+          inngestBaseUrl:
+            process.env.NODE_ENV !== 'production'
+              ? `http://localhost:8288`
+              : 'production',
+        },
+      });
+      
+      await inngest.send({
+        name: 'app/carousel.generate.request',
+        data: {
+          topic,
+          telegramUserId: String(telegramUserId),
+          messageId,
+          colorTemplate, // 🎨 Добавляем выбранный цветовой темплейт
+        },
+      });
+      
+      logger.info(
+        '✅ Событие на генерацию карусели с цветовым темплейтом УСПЕШНО отправлено в Inngest',
+        {
+          type: LogType.USER_ACTION,
+          data: { topic, telegramUserId, colorTemplate },
+        }
+      );
+      
+      // Подтверждаем callback
+      await ctx.answerCbQuery(`🎨 Выбран стиль: ${selectedTemplate.name}`);
+      
+      // Очищаем данные из памяти
+      if (global.carouselTopics) {
+        delete global.carouselTopics[topicKey];
+      }
+      if (global.carouselState) {
+        delete global.carouselState[topicKey];
+      }
+    } catch (error) {
+      logger.error(
+        'Ошибка при отправке события в Inngest с цветовым темплейтом',
+        {
+          type: LogType.BUSINESS_LOGIC,
+          error: error instanceof Error ? error : new Error(String(error)),
+          data: { topic, telegramUserId, colorTemplate },
+        }
+      );
+      
+      await ctx.editMessageText(
+        '❌ **Ошибка!** Не удалось запустить генерацию карусели. Попробуйте еще раз.',
+        { parse_mode: 'Markdown', reply_markup: undefined }
+      );
+      
+      await ctx.answerCbQuery('❌ Произошла ошибка');
+      
+      // Очищаем данные из памяти даже при ошибке
+      if (global.carouselTopics) {
+        delete global.carouselTopics[topicKey];
+      }
+      if (global.carouselState) {
+        delete global.carouselState[topicKey];
+      }
+    }
+    return;
+  }
+
+  if (!callbackData.startsWith('color:')) {
+    return;
+  }
+
+  const [, colorKey, topicKey] = callbackData.split(':');
+
+  // Получаем тему из памяти
+  const topicData = global.carouselTopics?.[topicKey];
+  if (!topicData) {
+    await ctx.answerCbQuery('❌ Сессия истекла, попробуйте еще раз');
+    return;
+  }
+
+  const { topic, messageId } = topicData;
   const colorTemplate = colorKey as ColorTemplate;
+  const telegramUserId = ctx.from?.id;
 
   const templates = InstagramCanvasService.getColorTemplates();
   const selectedTemplate = templates[colorTemplate];
@@ -288,7 +483,7 @@ export const handleColorSelection = async (ctx: any) => {
         eventName: 'app/carousel.generate.request',
         inngestBaseUrl:
           process.env.NODE_ENV !== 'production'
-            ? `http://localhost:7288`
+            ? `http://localhost:8288`
             : 'production',
       },
     });
@@ -313,6 +508,11 @@ export const handleColorSelection = async (ctx: any) => {
 
     // Подтверждаем callback
     await ctx.answerCbQuery(`🎨 Выбран стиль: ${selectedTemplate.name}`);
+
+    // Очищаем данные из памяти
+    if (global.carouselTopics) {
+      delete global.carouselTopics[topicKey];
+    }
   } catch (error) {
     logger.error(
       'Ошибка при отправке события в Inngest с цветовым темплейтом',
@@ -329,6 +529,11 @@ export const handleColorSelection = async (ctx: any) => {
     );
 
     await ctx.answerCbQuery('❌ Произошла ошибка');
+
+    // Очищаем данные из памяти даже при ошибке
+    if (global.carouselTopics) {
+      delete global.carouselTopics[topicKey];
+    }
   }
 };
 

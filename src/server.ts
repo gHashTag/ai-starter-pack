@@ -62,6 +62,24 @@ export async function createServer() {
           );
         }
 
+        // 🎨 Обработчик превью-изображений темплейтов
+        if (url.pathname.startsWith('/preview/')) {
+          const filename = url.pathname.replace('/preview/', '');
+          const previewPath = `${process.cwd()}/template-previews/${filename}`;
+          
+          try {
+            const file = Bun.file(previewPath);
+            return new Response(file, {
+              headers: {
+                'Content-Type': 'image/png',
+                'Cache-Control': 'public, max-age=3600', // Кешируем на час
+              },
+            });
+          } catch (error) {
+            return new Response('Preview not found', { status: 404 });
+          }
+        }
+
         // Направляем все запросы к /api/inngest в Inngest handler
         if (url.pathname.startsWith('/api/inngest')) {
           return inngestHandler(req);

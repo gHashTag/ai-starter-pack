@@ -7,21 +7,17 @@
 
 import { helloWorld } from './hello-world';
 import { generateCarousel } from './generate-carousel';
+import { vibeCodingBroadcast } from './vibecoding-broadcast';
 
 /**
  * Массив всех Inngest функций для регистрации
  */
-export const functions = [
-  helloWorld,
-  generateCarousel,
-  // Здесь будут добавляться новые функции
-] as const;
+export const functions = [helloWorld, generateCarousel, vibeCodingBroadcast];
 
 /**
- * Именованные экспорты функций для прямого импорта
+ * Экспорт отдельных функций для прямого импорта
  */
-export { helloWorld };
-export { generateCarousel };
+export { helloWorld, generateCarousel, vibeCodingBroadcast };
 
 /**
  * Экспорт событий и типов
@@ -32,6 +28,8 @@ export {
   type HelloWorldEventData,
   type HelloWorldResult,
 } from './hello-world';
+
+// VibeCoding broadcast экспорты удалены после рефакторинга
 
 /**
  * Экспорт по умолчанию для удобства

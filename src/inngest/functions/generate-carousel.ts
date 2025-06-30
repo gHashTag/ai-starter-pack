@@ -8,6 +8,7 @@
 import { inngest } from '../client';
 import { bot } from '../../bot';
 import { CarouselContentGeneratorService } from '../../services/carousel-content-generator.service';
+import { VibeCodingContentService } from '../../services/vibecoding-content.service';
 import {
   InstagramCanvasService,
   ColorTemplate,
@@ -18,6 +19,7 @@ import { promises as fs, createReadStream } from 'fs';
 // import path from "path"; // не используется
 
 const contentGenerator = new CarouselContentGeneratorService();
+const vibeContentService = new VibeCodingContentService();
 const canvasService = new InstagramCanvasService();
 
 /**
@@ -241,7 +243,36 @@ export const generateCarousel = inngest.createFunction(
         });
       });
 
-      // 🎯 ШАГ 9: Финальное уведомление об успехе
+      // 🎯 ШАГ 9: Генерируем Instagram-ready текст с веб-исследованием
+      const instagramText = await step.run(
+        'generate-instagram-text',
+        async () => {
+          return await vibeContentService.generateInstagramPost(topic, slides);
+        }
+      );
+
+      // 🎯 ШАГ 10: Отправляем готовый текст для Instagram
+      await step.run('send-instagram-text', async () => {
+        return bot.telegram.sendMessage(
+          telegramUserId,
+          `📱 **ГОТОВЫЙ ТЕКСТ ДЛЯ INSTAGRAM:**\n\n` +
+            `📋 *Скопируй и вставь этот текст в Instagram:*\n\n` +
+            `\`\`\`\n${instagramText}\n\`\`\`\n\n` +
+            `💡 **Как использовать:**\n` +
+            `1️⃣ Скопируй текст выше\n` +
+            `2️⃣ Сохрани изображения карусели\n` +
+            `3️⃣ Создай пост в Instagram\n` +
+            `4️⃣ Вставь скопированный текст\n` +
+            `5️⃣ Добавь изображения карусели\n` +
+            `6️⃣ Публикуй! 🚀`,
+          {
+            parse_mode: 'Markdown',
+            reply_parameters: { message_id: messageId },
+          }
+        );
+      });
+
+      // 🎯 ШАГ 11: Финальное уведомление об успехе
       await step.run('notify-success', async () => {
         return bot.telegram.editMessageText(
           telegramUserId,
@@ -252,14 +283,16 @@ export const generateCarousel = inngest.createFunction(
             `✅ Тема проанализирована\n` +
             `✅ Создано ${slides.length} слайдов\n` +
             `✅ Сгенерировано ${imagePaths.length} изображений\n` +
-            `✅ Карусель отправлена\n\n` +
+            `✅ Карусель отправлена\n` +
+            `✅ Готовый текст для Instagram создан\n\n` +
             `🎉 Карусель на тему "${topic}" готова!\n` +
+            `📱 Текст для Instagram отправлен отдельным сообщением\n` +
             `💡 Для создания новой карусели используйте /carousel`,
           { parse_mode: 'Markdown' }
         );
       });
 
-      // 🎯 ШАГ 10: Очистка временных файлов
+      // 🎯 ШАГ 12: Очистка временных файлов
       await step.run('cleanup-images', async () => {
         const cleanupPromises = imagePaths.map(p =>
           fs.unlink(p).catch(err =>

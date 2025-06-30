@@ -125,7 +125,7 @@ export const setupCommands = (bot: Telegraf<CustomContext>): void => {
           eventName: 'app/carousel.generate.request',
           inngestBaseUrl:
             process.env.NODE_ENV !== 'production'
-              ? `http://localhost:7288`
+              ? `http://localhost:8288`
               : 'production',
         },
       });

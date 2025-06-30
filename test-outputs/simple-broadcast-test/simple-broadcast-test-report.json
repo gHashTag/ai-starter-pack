@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-06-29T18:25:06.018Z",
+  "test_type": "simple_broadcast_simulation",
+  "results": {
+    "database_connection": "success",
+    "active_users_found": 3,
+    "selected_theme": "Cursor AI техники и лучшие практики",
+    "selected_style": "dark",
+    "simulation_results": {
+      "messages_sent": 3,
+      "errors": 0,
+      "success_rate": "100.00%"
+    }
+  },
+  "inngest_function_available": true,
+  "notes": [
+    "Тест выполнен в симуляционном режиме",
+    "Реальная отправка сообщений НЕ производилась",
+    "Система готова к продакшен использованию",
+    "Для активации добавьте OpenAI API ключ и Bot Token"
+  ]
+}
